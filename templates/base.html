@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <title>LabSmartTrack</title>
+    {% block head %}{% endblock %}
+    <title>{% block title %}LabSmartTrack{% endblock %}</title>
 </head>
-<body>
-    
-</body>
+    <body>
+        <div class= "app-shell">
+           <img class="logo" src="./static/images/logo.jpg" alt="LabSmartTrack Logo" >
+           <span class="app-title">
+                <strong>LabSmartTrack</strong>
+                <small> Mouse Colony Management System</small>
+           </span>
+    </div>
+         
+    </body>
 </html>
