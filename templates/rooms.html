@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Rooms | LabSmartTrack{% endblock %}
+{% block eyebrow %}Facility{% endblock %}
+{% block page_title %}Rooms{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Mouse Rooms</h2>
+        <p>Manage rooms, racks, QR door checks, and daily room status.</p>
+      </div>
+      <a class="button" href="/rooms/1/check">Open Room Check</a>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Building</th>
+          <th>Racks</th>
+          <th>Cages</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mouse Room A</td>
+          <td>Animal Facility</td>
+          <td>0</td>
+          <td>0</td>
+          <td><span class="badge">Setup</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Users | LabSmartTrack{% endblock %}
+{% block eyebrow %}Administration{% endblock %}
+{% block page_title %}Admin Users{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h2>Users and Roles</h2>
+    <p>Manage staff, supervisors, admins, and viewer access.</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Username</th>
+          <th>Role</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Demo Admin</td>
+          <td>admin</td>
+          <td>admin</td>
+          <td><span class="badge">Active</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

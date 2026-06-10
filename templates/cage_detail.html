@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Cage Detail | LabSmartTrack{% endblock %}
+{% block eyebrow %}Cage Record{% endblock %}
+{% block page_title %}Cage Detail{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <article class="stat-card">
+      <span>Cage ID</span>
+      <strong>CAGE-001</strong>
+    </article>
+    <article class="stat-card">
+      <span>Mouse Count</span>
+      <strong>0</strong>
+    </article>
+    <article class="stat-card">
+      <span>Capacity</span>
+      <strong>5</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Current Mice</h2>
+    <p>No mice assigned yet. This page will later open from the cage card QR code.</p>
+  </section>
+{% endblock %}

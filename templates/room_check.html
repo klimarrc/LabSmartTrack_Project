@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Room Check | LabSmartTrack{% endblock %}
+{% block eyebrow %}Daily Operations{% endblock %}
+{% block page_title %}Room Check{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <article class="stat-card">
+      <span>Weaning Due</span>
+      <strong>0</strong>
+    </article>
+    <article class="stat-card">
+      <span>Breeding Checks</span>
+      <strong>0</strong>
+    </article>
+    <article class="stat-card">
+      <span>Plug Checks</span>
+      <strong>0</strong>
+    </article>
+    <article class="stat-card">
+      <span>Cages</span>
+      <strong>0</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Staff Checklist</h2>
+    <form class="form-grid">
+      <label class="check-row"><input type="checkbox"> Food checked</label>
+      <label class="check-row"><input type="checkbox"> Water checked</label>
+      <label class="check-row"><input type="checkbox"> Health observations checked</label>
+      <label class="check-row"><input type="checkbox"> Environment checked</label>
+      <div class="field full-width">
+        <label for="notes">Notes for supervisor</label>
+        <textarea id="notes" name="notes"></textarea>
+      </div>
+      <button class="button" type="button">Submit Room Check</button>
+    </form>
+  </section>
+{% endblock %}

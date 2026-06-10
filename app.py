@@ -2,8 +2,15 @@ from functools import wraps
 
 from flask import Flask, redirect, render_template, request, session, url_for
 
+from models import db
+
+
 app = Flask(__name__)
-app.secret_key = "labsmarttrack-dev-secret"
+app.config["SECRET_KEY"] = "labsmarttrack-dev-secret"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///labsmarttrack.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
 
 
 def login_required(route_function):
@@ -18,41 +25,62 @@ def login_required(route_function):
 
 @app.route("/")
 @login_required
+def dashboard():
+    return render_template(
+        "dashboard.html",
+        room_count=0,
+        cage_count=0,
+        mouse_count=0,
+        weaning_due=0,
+    )
+
 
 @app.route("/rooms")
 @login_required
 def rooms():
-    return "<h1>Rooms page</h1>"
+    return render_template("rooms.html")
+
+
+@app.route("/rooms/<int:room_id>/check")
+@login_required
+def room_check(room_id):
+    return render_template("room_check.html", room_id=room_id)
 
 
 @app.route("/cages")
 @login_required
 def cages():
-    return "<h1>Cages page</h1>"
+    return render_template("cages.html")
+
+
+@app.route("/cages/<int:cage_id>")
+@login_required
+def cage_detail(cage_id):
+    return render_template("cage_detail.html", cage_id=cage_id)
 
 
 @app.route("/mice")
 @login_required
 def mice():
-    return "<h1>Mice page</h1>"
+    return render_template("mice.html")
 
 
 @app.route("/breeding")
 @login_required
 def breeding():
-    return "<h1>Breeding page</h1>"
+    return render_template("breeding.html")
 
 
-@app.route("/ health_reports")
+@app.route("/reports")
 @login_required
-def  Health reports():
-    return "<h1>Health Reports page</h1>"
+def reports():
+    return render_template("reports.html")
 
 
 @app.route("/admin/users")
 @login_required
 def admin_users():
-    return "<h1>Admin Users page</h1>"
+    return render_template("admin_users.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -76,6 +104,12 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.cli.command("init-db")
+def init_db():
+    db.create_all()
+    print("Initialized LabSmartTrack database.")
 
 
 if __name__ == "__main__":
