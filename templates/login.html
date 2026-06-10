@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | LabSmartTrack</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card">
+      <div class="login-brand">
+        <img class="login-logo" src="{{ url_for('static', filename='images/lab_logo_cropped.png') }}" alt="LabSmartTrack logo">
+        <div>
+          <h1>LabSmartTrack</h1>
+          <p>Mouse Colony Management System</p>
+        </div>
+      </div>
+
+      <form method="post" class="login-form">
+        <div>
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required>
+        </div>
+
+        <div>
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+        </div>
+
+        {% if error %}
+          <p class="form-error">{{ error }}</p>
+        {% endif %}
+
+        <button class="button" type="submit">Login</button>
+      </form>
+
+      <p class="login-hint">Demo login: admin / admin123</p>
+    </section>
+  </main>
+</body>
+</html>

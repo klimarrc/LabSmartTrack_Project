@@ -1,20 +1,47 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    {% block head %}{% endblock %}
-    <title>{% block title %}LabSmartTrack{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}LabSmartTrack{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
 </head>
-    <body>
-        <div class= "app-shell">
-           <img class="logo" src="./static/images/logo.jpg" alt="LabSmartTrack Logo" >
-           <span class="app-title">
-                <strong>LabSmartTrack</strong>
-                <small> Mouse Colony Management System</small>
-           </span>
-    </div>
-         
-    </body>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/">
+        <img class="brand-logo" src="{{ url_for('static', filename='images/lab_logo.png') }}" alt="LabSmartTrack logo">
+        <span>
+          <strong>LabSmartTrack</strong>
+          <small>Mouse Colony Management System</small>
+        </span>
+      </a>
+
+      <nav class="nav-list">
+        <a href="/">Dashboard</a>
+        <a href="/rooms">Rooms</a>
+        <a href="/cages">Cages</a>
+        <a href="/mice">Mice</a>
+        <a href="/breeding">Breeding</a>
+        <a href="/ health_reports"> HealthReports</a>
+        <a href="/admin/users">Admin</a>
+      </nav>
+    </aside>
+
+    <main class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">{% block eyebrow %}LabSmartTrack{% endblock %}</p>
+          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+        </div>
+        <a class="button" href="/logout">Logout</a>
+      </header>
+
+      <section class="content">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+</body>
 </html>

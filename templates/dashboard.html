@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | LabSmartTrack{% endblock %}
+{% block eyebrow %}Overview{% endblock %}
+{% block page_title %}Main Dashboard{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <article class="stat-card">
+      <span>Rooms</span>
+      <strong>{{ room_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Cages</span>
+      <strong>{{ cage_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Mice</span>
+      <strong>{{ mouse_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Weaning Due</span>
+      <strong>{{ weaning_due | default(0) }}</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <h2>Welcome to LabSmartTrack</h2>
+    <p>This page is using base.html. Next, you can build Rooms, Cages, Mice, Breeding, Reports, and Admin pages from this same layout.</p>
+  </section>
+{% endblock %}
