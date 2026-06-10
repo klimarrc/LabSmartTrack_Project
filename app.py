@@ -1,13 +1,18 @@
+import os
 from functools import wraps
 
+from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
 
 from models import db
 
+load_dotenv()  # Load environment variables from .env file
+    
+
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "labsmarttrack-dev-secret"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///labsmarttrack.db"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","sqlite:///lab_smart_track.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
@@ -91,7 +96,10 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        if username == "admin" and password == "admin123":
+        admin_username = os.getenv("ADMIN_USERNAME")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+
+        if username == admin_username and password == admin_password:
             session["user"] = {"username": username, "role": "admin"}
             return redirect(url_for("dashboard"))
 
