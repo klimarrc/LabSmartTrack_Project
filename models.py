@@ -87,9 +87,18 @@ class Genotype(db.Model):
 class BreedingPair(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     breeding_code = db.Column(db.String(80), unique=True, nullable=False)
+    principal_investigator = db.Column(db.String(160))
+    strain_name = db.Column(db.String(120))
+    mating_type = db.Column(db.String(80), nullable=False, default="Pair: 1 male + 1 female")
     sire_id = db.Column(db.Integer, db.ForeignKey("mouse.id"), nullable=True)
     dam_id = db.Column(db.Integer, db.ForeignKey("mouse.id"), nullable=True)
+    dam2_id = db.Column(db.Integer, db.ForeignKey("mouse.id"), nullable=True)
     cage_id = db.Column(db.Integer, db.ForeignKey("cage.id"), nullable=True)
+    post_litter_male_plan = db.Column(
+        db.String(120),
+        nullable=False,
+        default="Separate male after litter is born",
+    )
     status = db.Column(db.String(40), nullable=False, default="active")
     start_date = db.Column(db.Date)
     notes = db.Column(db.Text)

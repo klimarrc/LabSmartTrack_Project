@@ -5,11 +5,30 @@
 {% block page_title %}Rooms{% endblock %}
 
 {% block content %}
+  <section class="grid">
+    <article class="stat-card">
+      <span>Facilities</span>
+      <strong>{{ facility_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Rooms</span>
+      <strong>{{ room_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Racks</span>
+      <strong>{{ rack_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Cages</span>
+      <strong>{{ cage_count }}</strong>
+    </article>
+  </section>
+
   <section class="panel">
     <div class="section-header">
       <div>
-        <h2>Mouse Rooms</h2>
-        <p>Manage rooms, racks, QR door checks, and daily room status.</p>
+        <h2>Facilities and Rooms</h2>
+        <p>View the number of facilities and the rooms inside each facility.</p>
       </div>
       <a class="button" href="/rooms/1/check">Open Room Check</a>
     </div>
@@ -17,21 +36,25 @@
     <table>
       <thead>
         <tr>
+          <th>Facility</th>
           <th>Room</th>
-          <th>Building</th>
           <th>Racks</th>
           <th>Cages</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Mouse Room A</td>
-          <td>Animal Facility</td>
-          <td>0</td>
-          <td>0</td>
-          <td><span class="badge">Setup</span></td>
-        </tr>
+        {% for facility in facilities %}
+          {% for room in facility.rooms %}
+            <tr>
+              <td>{{ facility.name }}</td>
+              <td>{{ room.name }}</td>
+              <td>{{ room.racks }}</td>
+              <td>{{ room.cages }}</td>
+              <td><span class="badge">Active</span></td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
       </tbody>
     </table>
   </section>
