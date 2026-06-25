@@ -35,8 +35,12 @@
       <strong>{{ hidden_count }}</strong>
     </article>
     <article class="stat-card">
-      <span>Females Waiting</span>
+      <span>Females without Pups</span>
       <strong>{{ waiting_female_count }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Available Males</span>
+      <strong>{{ available_male_count }}</strong>
     </article>
   </section>
 
@@ -109,8 +113,97 @@
   <section class="panel">
     <div class="section-header">
       <div>
-        <h2>Females Waiting for Mating</h2>
-        <p>Female mice without pups that are available to start a new pair or trio mating.</p>
+        <h2>Cage Price Summary</h2>
+        <p>Estimated daily cage cost for the selected breeding page filters.</p>
+      </div>
+    </div>
+
+    <div class="cost-grid">
+      <article class="cost-card">
+        <span>Holding Cage</span>
+        <strong>${{ "%.2f"|format(holding_cage_price) }}</strong>
+        <small>{{ holding_cage_count }} cages x ${{ "%.2f"|format(holding_cage_price) }}</small>
+        <b>${{ "%.2f"|format(holding_cage_daily_total) }} / day</b>
+      </article>
+      <article class="cost-card">
+        <span>Mating Cage</span>
+        <strong>${{ "%.2f"|format(mating_cage_price) }}</strong>
+        <small>{{ mating_cage_count }} cages x ${{ "%.2f"|format(mating_cage_price) }}</small>
+        <b>${{ "%.2f"|format(mating_cage_daily_total) }} / day</b>
+      </article>
+      <article class="cost-card total-cost-card">
+        <span>Total Estimate</span>
+        <strong>${{ "%.2f"|format(cage_daily_total) }}</strong>
+        <small>Holding + mating cages</small>
+        <b>Daily total</b>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Available Males for Mating</h2>
+        <p>Male cages listed here are available. When a male is assigned to a mating, his source cage is hidden from this list.</p>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Male ID</th>
+          <th>Facility</th>
+          <th>Room</th>
+          <th>PI</th>
+          <th>Strain</th>
+          <th>Genotype</th>
+          <th>Age</th>
+          <th>Source Cage</th>
+          <th>Status</th>
+          <th>Mating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for male in available_males %}
+          <tr>
+            <td><strong><span class="mouse-sex male" aria-hidden="true"></span>{{ male.mouse_id }}</strong></td>
+            <td>{{ male.facility_name }}</td>
+            <td>{{ male.room_name }}</td>
+            <td>{{ male.principal_investigator }}</td>
+            <td>{{ male.strain }}</td>
+            <td>{{ male.genotype }}</td>
+            <td>{{ male.age_months }} months</td>
+            <td>{{ male.cage_id }}</td>
+            <td><span class="badge">{{ male.status }}</span></td>
+            <td>
+              <button
+                class="button button-small"
+                type="button"
+                data-use-male
+                data-male-id="{{ male.mouse_id }}"
+                data-room-id="{{ male.room_id }}"
+                data-pi="{{ male.principal_investigator }}"
+                data-strain="{{ male.strain }}"
+                data-source-cage-id="{{ male.cage_id }}"
+              >
+                Use Male
+              </button>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="10">No available males found with the selected filters.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Females without Pups</h2>
+        <p>Female mice that do not have any pups and are available to start a new pair or trio mating.</p>
       </div>
     </div>
 
@@ -124,6 +217,9 @@
           <th>Strain</th>
           <th>Genotype</th>
           <th>Age</th>
+          <th>Previous Litter</th>
+          <th>Last Wean Date</th>
+          <th>Rest Days</th>
           <th>Cage</th>
           <th>Status</th>
           <th>Mating</th>
@@ -139,6 +235,9 @@
             <td>{{ female.strain }}</td>
             <td>{{ female.genotype }}</td>
             <td>{{ female.age_months }} months</td>
+            <td>{{ female.previous_litter_id }}</td>
+            <td>{{ female.last_wean_date }}</td>
+            <td>{{ female.rest_days }}</td>
             <td>{{ female.cage_id }}</td>
             <td><span class="badge">{{ female.status }}</span></td>
             <td>
@@ -158,7 +257,7 @@
           </tr>
         {% else %}
           <tr>
-            <td colspan="10">No females without pups are waiting for mating with the selected filters.</td>
+            <td colspan="13">No females after wean are waiting for mating with the selected filters.</td>
           </tr>
         {% endfor %}
       </tbody>
@@ -308,6 +407,14 @@
               >
                 Details
               </button>
+              <a
+                class="button button-small button-muted"
+                href="{{ url_for('breeding_pair_card', pair_id=pair.pair_id) }}"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Print Card
+              </a>
               {% if pair.is_hidden %}
                 <form method="post" action="{{ url_for('show_breeding_pair') }}">
                   <input name="pair_id" type="hidden" value="{{ pair.pair_id }}">
@@ -478,6 +585,10 @@
           <input id="sire_id" name="sire_id" placeholder="M-1001" required>
         </div>
         <div class="field">
+          <label for="male_source_cage_id">Male Source Cage</label>
+          <input id="male_source_cage_id" name="male_source_cage_id" placeholder="Hidden after mating" readonly>
+        </div>
+        <div class="field">
           <label for="dam_id"><span class="mouse-sex female" aria-hidden="true"></span> Dam ID</label>
           <input id="dam_id" name="dam_id" placeholder="M-1002" required>
         </div>
@@ -577,6 +688,12 @@
           <strong id="detailPlan"></strong>
         </article>
       </section>
+
+      <div class="detail-toolbar">
+        <a class="button button-muted" id="detailPrintCardLink" href="#" target="_blank" rel="noreferrer">
+          Print Card with QR
+        </a>
+      </div>
 
       <section class="mating-visual" aria-label="Mating cage structure">
         <article class="mouse-card male-card">
@@ -801,9 +918,24 @@
         document.getElementById("principal_investigator").value = button.dataset.pi;
         document.getElementById("strain").value = button.dataset.strain;
         document.getElementById("mating_type").value = "Pair: 1 male + 1 female";
+        document.getElementById("sire_id").value = "";
+        document.getElementById("male_source_cage_id").value = "";
         document.getElementById("dam_id").value = button.dataset.femaleId;
         document.getElementById("dam2_id").value = "";
         document.getElementById("cage_id").value = button.dataset.cageId;
+        document.getElementById("status").value = "Active";
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      });
+    });
+
+    document.querySelectorAll("[data-use-male]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.getElementById("room_id").value = button.dataset.roomId;
+        document.getElementById("principal_investigator").value = button.dataset.pi;
+        document.getElementById("strain").value = button.dataset.strain;
+        document.getElementById("sire_id").value = button.dataset.maleId;
+        document.getElementById("male_source_cage_id").value = button.dataset.sourceCageId;
         document.getElementById("status").value = "Active";
         modal.classList.add("is-open");
         modal.setAttribute("aria-hidden", "false");
@@ -859,6 +991,7 @@
       hideRoomId: document.getElementById("detailHideRoomId"),
       hideButton: document.getElementById("detailHideButton"),
       hiddenNote: document.getElementById("detailHiddenNote"),
+      printCardLink: document.getElementById("detailPrintCardLink"),
     };
 
     function updateRetirementSignal() {
@@ -909,6 +1042,7 @@
         detailFields.hiddenNote.textContent = isHidden
           ? "This mating is hidden from the active list, but its data is still saved."
           : "This hides the mating from the active list but keeps all data.";
+        detailFields.printCardLink.href = `/breeding/${encodeURIComponent(button.dataset.pairId)}/card`;
         updateRetirementSignal();
         document.getElementById("matingDetailTitle").textContent = `${button.dataset.pairId} Details`;
         detailModal.classList.add("is-open");

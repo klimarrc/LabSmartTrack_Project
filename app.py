@@ -1,8 +1,10 @@
 import os
+from io import BytesIO
 from functools import wraps
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, session, url_for
+import qrcode
+from flask import Flask, redirect, render_template, request, send_file, session, url_for
 
 from models import db
 
@@ -16,6 +18,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","sqlite:///lab_
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
+
+
+HOLDING_CAGE_PRICE = 1.47
+MATING_CAGE_PRICE = 2.10
 
 
 FACILITIES = [
@@ -104,7 +110,10 @@ DEFAULT_WAITING_FEMALES = [
         "cage_id": "CAGE-032",
         "age_months": 3,
         "genotype": "+/+",
-        "status": "No pups - ready for mating",
+        "previous_litter_id": "L-009",
+        "last_wean_date": "2026-06-12",
+        "rest_days": 5,
+        "status": "After wean - ready for mating",
     },
     {
         "mouse_id": "F-2002",
@@ -117,7 +126,10 @@ DEFAULT_WAITING_FEMALES = [
         "cage_id": "CAGE-033",
         "age_months": 4,
         "genotype": "+/-",
-        "status": "No pups - ready for mating",
+        "previous_litter_id": "L-010",
+        "last_wean_date": "2026-06-10",
+        "rest_days": 7,
+        "status": "After wean - ready for mating",
     },
     {
         "mouse_id": "F-2101",
@@ -130,7 +142,52 @@ DEFAULT_WAITING_FEMALES = [
         "cage_id": "CAGE-041",
         "age_months": 3,
         "genotype": "WT",
-        "status": "No pups - ready for mating",
+        "previous_litter_id": "L-011",
+        "last_wean_date": "2026-06-14",
+        "rest_days": 3,
+        "status": "After wean - ready for mating",
+    },
+]
+
+DEFAULT_AVAILABLE_MALES = [
+    {
+        "mouse_id": "M-3001",
+        "facility_id": "FAC-001",
+        "facility_name": "Animal Facility",
+        "room_id": "RM-A",
+        "room_name": "Mouse Room A",
+        "principal_investigator": "Dr. Chen",
+        "strain": "C57BL/6J",
+        "cage_id": "CAGE-M-032",
+        "age_months": 4,
+        "genotype": "+/+",
+        "status": "Available for mating",
+    },
+    {
+        "mouse_id": "M-3002",
+        "facility_id": "FAC-001",
+        "facility_name": "Animal Facility",
+        "room_id": "RM-A",
+        "room_name": "Mouse Room A",
+        "principal_investigator": "Dr. Chen",
+        "strain": "C57BL/6J",
+        "cage_id": "CAGE-M-033",
+        "age_months": 5,
+        "genotype": "+/-",
+        "status": "Available for mating",
+    },
+    {
+        "mouse_id": "M-3101",
+        "facility_id": "FAC-002",
+        "facility_name": "Breeding Facility",
+        "room_id": "RM-C",
+        "room_name": "Breeding Room C",
+        "principal_investigator": "Dr. Patel",
+        "strain": "BALB/c",
+        "cage_id": "CAGE-M-041",
+        "age_months": 4,
+        "genotype": "WT",
+        "status": "Available for mating",
     },
 ]
 
@@ -169,12 +226,23 @@ def waiting_females_from_session():
     return DEFAULT_WAITING_FEMALES + session.get("waiting_females", [])
 
 
+def available_males_from_session():
+    return DEFAULT_AVAILABLE_MALES + session.get("available_males", [])
+
+
 def room_id_for_pair(pair_id):
     pair = next(
         (item for item in breeding_pairs_from_session() if item["pair_id"] == pair_id),
         None,
     )
     return pair["room_id"] if pair else "all"
+
+
+def breeding_pair_by_id(pair_id):
+    return next(
+        (item for item in breeding_pairs_from_session() if item["pair_id"] == pair_id),
+        None,
+    )
 
 
 def females_waiting_for_mating(breeding_pairs):
@@ -189,6 +257,21 @@ def females_waiting_for_mating(breeding_pairs):
         female
         for female in waiting_females_from_session()
         if female["mouse_id"] not in active_dam_ids
+    ]
+
+
+def males_available_for_mating(breeding_pairs):
+    active_sire_ids = {
+        pair.get("sire_id")
+        for pair in breeding_pairs
+        if not pair.get("is_hidden") and pair.get("status", "").lower() != "retired"
+    }
+    hidden_cage_ids = set(session.get("hidden_male_cage_ids", []))
+    return [
+        male
+        for male in available_males_from_session()
+        if male["mouse_id"] not in active_sire_ids
+        and male["cage_id"] not in hidden_cage_ids
     ]
 
 
@@ -351,16 +434,23 @@ def breeding():
             if selected_mating_id.lower() in pair["pair_id"].lower()
         ]
 
-    waiting_females = females_waiting_for_mating(breeding_pairs)
+    waiting_females = females_waiting_for_mating(all_breeding_pairs)
+    available_males = males_available_for_mating(all_breeding_pairs)
 
     if selected_facility != "all":
         waiting_females = [
             female for female in waiting_females if female["facility_id"] == selected_facility
         ]
+        available_males = [
+            male for male in available_males if male["facility_id"] == selected_facility
+        ]
 
     if selected_room != "all":
         waiting_females = [
             female for female in waiting_females if female["room_id"] == selected_room
+        ]
+        available_males = [
+            male for male in available_males if male["room_id"] == selected_room
         ]
 
     if selected_pi_strain != "all":
@@ -370,6 +460,12 @@ def breeding():
             for female in waiting_females
             if female["principal_investigator"] == selected_pi
             and female["strain"] == selected_strain
+        ]
+        available_males = [
+            male
+            for male in available_males
+            if male["principal_investigator"] == selected_pi
+            and male["strain"] == selected_strain
         ]
 
     active_matings = [
@@ -381,6 +477,8 @@ def breeding():
     active_trio_count = len(
         [pair for pair in active_matings if pair.get("mating_type", "").startswith("Trio:")]
     )
+    holding_cage_count = len(waiting_females) + len(available_males)
+    mating_cage_count = len(active_matings)
     visible_pair_ids = {pair["pair_id"] for pair in breeding_pairs}
     litters = [litter for litter in litters_from_session() if litter["pair_id"] in visible_pair_ids]
 
@@ -393,6 +491,16 @@ def breeding():
         active_trio_count=active_trio_count,
         waiting_females=waiting_females,
         waiting_female_count=len(waiting_females),
+        available_males=available_males,
+        available_male_count=len(available_males),
+        holding_cage_price=HOLDING_CAGE_PRICE,
+        mating_cage_price=MATING_CAGE_PRICE,
+        holding_cage_count=holding_cage_count,
+        mating_cage_count=mating_cage_count,
+        holding_cage_daily_total=holding_cage_count * HOLDING_CAGE_PRICE,
+        mating_cage_daily_total=mating_cage_count * MATING_CAGE_PRICE,
+        cage_daily_total=(holding_cage_count * HOLDING_CAGE_PRICE)
+        + (mating_cage_count * MATING_CAGE_PRICE),
         pi_strain_summary=pi_strain_summary_for_pairs(breeding_pairs),
         litter_count=len(litters),
         weaning_due=0,
@@ -428,6 +536,7 @@ def add_breeding_pair():
         "strain": request.form.get("strain", "").strip(),
         "mating_type": request.form.get("mating_type", "Pair: 1 male + 1 female"),
         "sire_id": request.form.get("sire_id", "").strip(),
+        "sire_source_cage_id": request.form.get("male_source_cage_id", "").strip(),
         "dam_id": request.form.get("dam_id", "").strip(),
         "dam2_id": request.form.get("dam2_id", "").strip(),
         "cage_id": request.form.get("cage_id", "").strip(),
@@ -442,6 +551,13 @@ def add_breeding_pair():
     saved_pairs = session.get("breeding_pairs", [])
     saved_pairs.append(new_pair)
     session["breeding_pairs"] = saved_pairs
+
+    male_source_cage_id = new_pair["sire_source_cage_id"]
+    if male_source_cage_id:
+        hidden_male_cage_ids = session.get("hidden_male_cage_ids", [])
+        if male_source_cage_id not in hidden_male_cage_ids:
+            hidden_male_cage_ids.append(male_source_cage_id)
+            session["hidden_male_cage_ids"] = hidden_male_cage_ids
 
     return redirect(url_for("breeding", room_id=room_id))
 
@@ -516,6 +632,37 @@ def show_breeding_pair():
     session["hidden_breeding_pair_ids"] = hidden_pair_ids
 
     return redirect(url_for("breeding", room_id=room_id, show_hidden=1))
+
+
+@app.route("/breeding/<pair_id>/qr.png")
+@login_required
+def breeding_pair_qr(pair_id):
+    target_url = url_for("breeding_pair_card", pair_id=pair_id, _external=True)
+    image = qrcode.make(target_url)
+    image_io = BytesIO()
+    image.save(image_io, "PNG")
+    image_io.seek(0)
+    return send_file(image_io, mimetype="image/png")
+
+
+@app.route("/breeding/<pair_id>/card")
+@login_required
+def breeding_pair_card(pair_id):
+    pair = breeding_pair_by_id(pair_id)
+
+    if not pair:
+        return redirect(url_for("breeding"))
+
+    litters = [
+        litter for litter in litters_from_session() if litter["pair_id"] == pair_id
+    ]
+    return render_template(
+        "breeding_card.html",
+        pair=pair,
+        litters=litters,
+        qr_url=url_for("breeding_pair_qr", pair_id=pair_id),
+        detail_url=url_for("breeding_pair_card", pair_id=pair_id, _external=True),
+    )
 
 
 @app.route("/reports")
