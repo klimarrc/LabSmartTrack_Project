@@ -5,6 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# SQLAlchemy schema for the production database layer. Some Flask routes still
+# use prototype/session data until these models are fully wired into CRUD flows.
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)

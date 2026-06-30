@@ -113,36 +113,6 @@
   <section class="panel">
     <div class="section-header">
       <div>
-        <h2>Cage Price Summary</h2>
-        <p>Estimated daily cage cost for the selected breeding page filters.</p>
-      </div>
-    </div>
-
-    <div class="cost-grid">
-      <article class="cost-card">
-        <span>Holding Cage</span>
-        <strong>${{ "%.2f"|format(holding_cage_price) }}</strong>
-        <small>{{ holding_cage_count }} cages x ${{ "%.2f"|format(holding_cage_price) }}</small>
-        <b>${{ "%.2f"|format(holding_cage_daily_total) }} / day</b>
-      </article>
-      <article class="cost-card">
-        <span>Mating Cage</span>
-        <strong>${{ "%.2f"|format(mating_cage_price) }}</strong>
-        <small>{{ mating_cage_count }} cages x ${{ "%.2f"|format(mating_cage_price) }}</small>
-        <b>${{ "%.2f"|format(mating_cage_daily_total) }} / day</b>
-      </article>
-      <article class="cost-card total-cost-card">
-        <span>Total Estimate</span>
-        <strong>${{ "%.2f"|format(cage_daily_total) }}</strong>
-        <small>Holding + mating cages</small>
-        <b>Daily total</b>
-      </article>
-    </div>
-  </section>
-
-  <section class="panel">
-    <div class="section-header">
-      <div>
         <h2>Available Males for Mating</h2>
         <p>Male cages listed here are available. When a male is assigned to a mating, his source cage is hidden from this list.</p>
       </div>
@@ -883,8 +853,10 @@
     const facilityFilter = document.getElementById("facility_id");
     const roomFilter = document.getElementById("room_filter");
 
+    // Keep the room dropdown consistent with the selected facility filter.
     function updateRoomOptionsForFacility() {
       const selectedFacility = facilityFilter.value;
+
       Array.from(roomFilter.options).forEach((option) => {
         if (option.value === "all") {
           option.hidden = false;
@@ -896,8 +868,7 @@
           option.dataset.facilityId !== selectedFacility;
       });
 
-      const selectedRoomOption = roomFilter.selectedOptions[0];
-      if (selectedRoomOption && selectedRoomOption.hidden) {
+      if (roomFilter.selectedOptions[0]?.hidden) {
         roomFilter.value = "all";
       }
     }
@@ -905,6 +876,7 @@
     facilityFilter.addEventListener("change", updateRoomOptionsForFacility);
     updateRoomOptionsForFacility();
 
+    // Open the Add Mating modal from page-level action buttons.
     document.querySelectorAll("[data-open-modal]").forEach((button) => {
       button.addEventListener("click", () => {
         modal.classList.add("is-open");
@@ -912,6 +884,7 @@
       });
     });
 
+    // Start Mating from an available female: prefill the dam and cage fields.
     document.querySelectorAll("[data-start-mating]").forEach((button) => {
       button.addEventListener("click", () => {
         document.getElementById("room_id").value = button.dataset.roomId;
@@ -929,6 +902,7 @@
       });
     });
 
+    // Use Male from the available male table: prefill sire and source cage.
     document.querySelectorAll("[data-use-male]").forEach((button) => {
       button.addEventListener("click", () => {
         document.getElementById("room_id").value = button.dataset.roomId;
@@ -956,6 +930,7 @@
       }
     });
 
+    // Cached detail modal targets used when a user opens a mating record.
     const detailFields = {
       pairId: document.getElementById("detailPairId"),
       status: document.getElementById("detailStatus"),
@@ -994,6 +969,7 @@
       printCardLink: document.getElementById("detailPrintCardLink"),
     };
 
+    // Female retirement is a visual signal only; saving retirement happens via hide/archive.
     function updateRetirementSignal() {
       const deliveries = Number(detailFields.deliveryCount.textContent || 0);
       const ageMonths = Number(detailFields.damAgeMonths.value || 0);
@@ -1003,6 +979,7 @@
       detailFields.retireSignal.parentElement.classList.toggle("is-warning", shouldRetire);
     }
 
+    // Populate the details modal from the selected table row.
     document.querySelectorAll("[data-detail-button]").forEach((button) => {
       button.addEventListener("click", () => {
         detailFields.pairId.textContent = button.dataset.pairId;
@@ -1036,6 +1013,7 @@
         detailFields.maleWeanCage.placeholder = `CAGE-MW-${button.dataset.pairId.replace("BP-", "")}`;
         detailFields.deliveryCount.textContent = button.dataset.litterCount || "0";
         detailFields.damAgeMonths.value = "";
+
         const isHidden = button.dataset.hidden === "1";
         detailFields.hideButton.disabled = isHidden;
         detailFields.hideButton.textContent = isHidden ? "Already hidden" : "Hide retired mating";
@@ -1043,6 +1021,7 @@
           ? "This mating is hidden from the active list, but its data is still saved."
           : "This hides the mating from the active list but keeps all data.";
         detailFields.printCardLink.href = `/breeding/${encodeURIComponent(button.dataset.pairId)}/card`;
+
         updateRetirementSignal();
         document.getElementById("matingDetailTitle").textContent = `${button.dataset.pairId} Details`;
         detailModal.classList.add("is-open");
@@ -1052,6 +1031,7 @@
 
     detailFields.damAgeMonths.addEventListener("input", updateRetirementSignal);
 
+    // Client-side PI + strain drilldown narrows the currently rendered rows.
     const breedingRows = Array.from(document.querySelectorAll("[data-breeding-row]"));
     const breedingFilterNote = document.getElementById("breedingFilterNote");
     const breedingFilterText = document.getElementById("breedingFilterText");
@@ -1064,11 +1044,10 @@
         const strain = button.dataset.summaryStrain;
 
         breedingRows.forEach((row) => {
-          const matches =
-            row.dataset.rowRoom === room &&
-            row.dataset.rowPi === pi &&
-            row.dataset.rowStrain === strain;
-          row.hidden = !matches;
+          row.hidden =
+            row.dataset.rowRoom !== room ||
+            row.dataset.rowPi !== pi ||
+            row.dataset.rowStrain !== strain;
         });
 
         breedingFilterText.textContent = `Showing breeding records for ${pi} / ${strain} in ${room}.`;

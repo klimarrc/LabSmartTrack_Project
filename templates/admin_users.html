@@ -27,4 +27,26 @@
       </tbody>
     </table>
   </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Cage Price Settings</h2>
+        <p>Internal cage billing values used by administrators for cost tracking.</p>
+      </div>
+    </div>
+
+    <div class="cost-grid">
+      <article class="cost-card">
+        <span>Holding Cage</span>
+        <strong>${{ "%.2f"|format(holding_cage_price) }}</strong>
+        <small>Daily holding cage rate</small>
+      </article>
+      <article class="cost-card">
+        <span>Mating Cage</span>
+        <strong>${{ "%.2f"|format(mating_cage_price) }}</strong>
+        <small>Daily mating cage rate</small>
+      </article>
+    </div>
+  </section>
 {% endblock %}
