@@ -6,15 +6,18 @@ from dotenv import load_dotenv
 import qrcode
 from flask import Flask, redirect, render_template, request, send_file, session, url_for
 
-# Import Blueprints
-from blueprints.auth import auth_bp
-from blueprints.main import main_bp
-from blueprints.breeding_view import breeding_bp
 
 from models import db
+from flask import Blueprint, render_template
+from routes.breeding import breeding_bp, main_bp, auth_bp
+
+breeding_bp = Blueprint("breeding", __name__)
+
+@breeding_bp.route("/breeding")
+def breeding():
+    return render_template("breeding.html")
 
 load_dotenv()  # Load environment variables from .env file
-    
 
 
 app = Flask(__name__)

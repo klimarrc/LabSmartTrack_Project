@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from blueprints.auth import login_required
-from helpers import FACILITIES, HOLDING_CAGE_PRICE, MATING_CAGE_PRICE
+from routes import FACILITIES, HOLDING_CAGE_PRICE, MATING_CAGE_PRICE
 
 main_bp = Blueprint("main", __name__)
 

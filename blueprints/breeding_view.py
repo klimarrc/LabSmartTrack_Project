@@ -2,19 +2,19 @@ from io import BytesIO
 import qrcode
 from flask import Blueprint, redirect, render_template, request, send_file, session, url_for
 from blueprints.auth import login_required
-import helpers
+import routes
 
 breeding_bp = Blueprint("breeding_views", __name__)
 
 
 def _all_rooms():
-    rooms_fn = getattr(helpers, "all_rooms", None)
+    rooms_fn = getattr(routes, "all_rooms", None)
     if rooms_fn is not None and callable(rooms_fn):
         try:
             return rooms_fn()
         except TypeError:
             pass
-    return getattr(helpers, "ROOMS", [])
+    return getattr(routes, "ROOMS", [])
 
 @breeding_bp.route("/breeding")
 @login_required
@@ -25,7 +25,7 @@ def breeding():
     selected_mating_id = request.args.get("mating_id", "").strip()
     show_hidden = request.args.get("show_hidden") == "1"
     
-    all_pairs = getattr(helpers, "breeding_pairs_from_session", 
+    all_pairs = getattr(routes, "breeding_pairs_from_session", 
                         lambda: session.get("breeding_pairs", []))()
     hidden_count = len([p for p in all_pairs
                          if p.get("is_hidden")])
@@ -33,7 +33,7 @@ def breeding():
                       if show_hidden 
                       or not p.get("is_hidden")]
     pi_strain_options = getattr(
-        helpers,
+        routes,
         "pi_strain_filter_options",
         lambda pairs: sorted(
             {f"{p['principal_investigator']}||{p['strain']}" for p in pairs}
@@ -58,11 +58,11 @@ def breeding():
             if selected_mating_id.lower() in p["pair_id"].lower()]
 
     waiting_females = getattr(
-        helpers,
+        routes,
         "females_waiting_for_mating",
         lambda _pairs: [],
     )(all_pairs)
-    available_males = getattr(helpers, "males_available_for_mating", 
+    available_males = getattr(routes, "males_available_for_mating", 
                               lambda _pairs: [])(all_pairs)
 
     if selected_facility != "all":
@@ -97,7 +97,7 @@ def breeding():
         if p.get("mating_type", "").startswith("Trio:")])
     visible_pair_ids = {
         p["pair_id"] for p in breeding_pairs}
-    litters_from_session = getattr(helpers, "litters_from_session", lambda: [])
+    litters_from_session = getattr(routes, "litters_from_session", lambda: [])
     litters = [
         l for l in litters_from_session()
         if l["pair_id"] in visible_pair_ids
@@ -115,13 +115,13 @@ def breeding():
         available_males=available_males, 
         available_male_count=len(available_males),
         pi_strain_summary=getattr(
-            helpers,
+            routes,
             "pi_strain_summary_for_pairs",
             lambda _pairs: [],
         )(breeding_pairs),
         litter_count=len(litters),
         weaning_due=0, 
-        facilities=helpers.FACILITIES,
+        facilities=routes.FACILITIES,
         rooms=_all_rooms(),
         pi_strain_options=pi_strain_options,
         selected_facility=selected_facility, 
@@ -130,7 +130,7 @@ def breeding():
         selected_mating_id=selected_mating_id,
         show_hidden=show_hidden,
         hidden_count=hidden_count,
-        facility_count=len(helpers.FACILITIES)
+        facility_count=len(routes.FACILITIES)
     )
 
 @breeding_bp.route("/breeding/add-pair", methods=["POST"])
@@ -180,7 +180,7 @@ def add_litter():
     saved_litters = session.get("litters", [])
     saved_litters.append(new_litter)
     session["litters"] = saved_litters
-    return redirect(url_for("breeding_views.breeding", room_id=request.form.get("room_id") or helpers.room_id_for_pair(pair_id)))
+    return redirect(url_for("breeding_views.breeding", room_id=request.form.get("room_id") or routes.room_id_for_pair(pair_id)))
 
 @breeding_bp.route("/breeding/add-cage-plan", methods=["POST"])
 @login_required
@@ -194,13 +194,13 @@ def add_cage_plan():
         "male_weaning_cage_id": request.form.get("male_weaning_cage_id", ""), "move_date": request.form.get("move_date", ""), "status": "Planned",
     })
     session["cage_plans"] = saved_plans
-    return redirect(url_for("breeding_views.breeding", room_id=request.form.get("room_id") or helpers.room_id_for_pair(pair_id)))
+    return redirect(url_for("breeding_views.breeding", room_id=request.form.get("room_id") or routes.room_id_for_pair(pair_id)))
 
 @breeding_bp.route("/breeding/hide-pair", methods=["POST"])
 @login_required
 def hide_breeding_pair():
     pair_id = request.form.get("pair_id", "").strip()
-    room_id = request.form.get("room_id") or helpers.room_id_for_pair(pair_id)
+    room_id = request.form.get("room_id") or routes.room_id_for_pair(pair_id)
     hidden_pair_ids = session.get("hidden_breeding_pair_ids", [])
     if pair_id and pair_id not in hidden_pair_ids:
         hidden_pair_ids.append(pair_id)
@@ -211,7 +211,7 @@ def hide_breeding_pair():
 @login_required
 def show_breeding_pair():
     pair_id = request.form.get("pair_id", "").strip()
-    room_id = request.form.get("room_id") or helpers.room_id_for_pair(pair_id)
+    room_id = request.form.get("room_id") or routes.room_id_for_pair(pair_id)
     hidden_pair_ids = [h_id for h_id in session.get("hidden_breeding_pair_ids", []) if h_id != pair_id]
     session["hidden_breeding_pair_ids"] = hidden_pair_ids
     return redirect(url_for("breeding_views.breeding", room_id=room_id, show_hidden=1))
@@ -231,10 +231,10 @@ def breeding_pair_qr(pair_id):
 @breeding_bp.route("/breeding/<pair_id>/card")
 @login_required
 def breeding_pair_card(pair_id):
-    pair = helpers.breeding_pair_by_id(pair_id)
+    pair = routes.breeding_pair_by_id(pair_id)
     if not pair:
         return redirect(url_for("breeding_views.breeding"))
-    litters_from_session = getattr(helpers, "litters_from_session", lambda: [])
+    litters_from_session = getattr(routes, "litters_from_session", lambda: [])
     litters = [l for l in litters_from_session() if l["pair_id"] == pair_id]
     return render_template(
         "breeding_card.html", pair=pair, litters=litters,
