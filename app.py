@@ -9,7 +9,8 @@ from flask import Flask, redirect, render_template, request, send_file, session,
 
 from models import db
 from flask import Blueprint, render_template
-from routes.breeding import breeding_bp, main_bp, auth_bp
+from routes import breeding_bp
+main_bp, auth_bp
 
 breeding_bp = Blueprint("breeding", __name__)
 
