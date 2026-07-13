@@ -19,6 +19,33 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 
+# Location and facility models for the animal facility management system.
+class City(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    state = db.Column(db.String(80))
+    country = db.Column(db.String(80))
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    facilities = db.relationship("Facility", backref="city", lazy=True)
+class Facility(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    address = db.Column(db.String(255))
+    contact_email = db.Column(db.String(160))
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    departments = db.relationship("Department", backref="facility", lazy=True)
+
+class Department(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    facility_id = db.Column(db.Integer, db.ForeignKey("facility.id"), nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    rooms = db.relationship("Room", backref="department", lazy=True)
+    
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)

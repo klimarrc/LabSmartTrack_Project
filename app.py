@@ -14,9 +14,7 @@ main_bp, auth_bp
 
 breeding_bp = Blueprint("breeding", __name__)
 
-@breeding_bp.route("/breeding")
-def breeding():
-    return render_template("breeding.html")
+
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -38,6 +36,11 @@ app.register_blueprint(breeding_bp)
 def init_db():
     db.create_all()
     print("Initialized LabSmartTrack database.")
+
+@app.breeding_bp.route("/breeding")
+def breeding():
+    return render_template("breeding.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
