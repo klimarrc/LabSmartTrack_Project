@@ -1,45 +1,54 @@
 import os
-from io import BytesIO
-from functools import wraps
-from dotenv import load_dotenv
 
-import qrcode
-from flask import Flask, redirect, render_template, request, send_file, session, url_for
+from flask import Flask, redirect, render_template, session, url_for
+
+from blueprints.dashboard import dashboard_bp
 
 
-from models import db
-from flask import Blueprint, render_template
-from routes import breeding_bp
-main_bp, auth_bp
+def create_app():
+    app = Flask(__name__)
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "labsmarttrack-dev-secret")
 
-breeding_bp = Blueprint("breeding", __name__)
+    app.register_blueprint(dashboard_bp)
+
+    @app.context_processor
+    def inject_current_user():
+        return {"current_user": session.get("user")}
+
+    @app.route("/login")
+    def login():
+        session["user"] = {"name": "Demo Staff", "role": "staff"}
+        return redirect(url_for("dashboard.dashboard"))
+
+    @app.route("/logout")
+    def logout():
+        session.clear()
+        return redirect(url_for("dashboard.dashboard"))
+
+    @app.route("/cages")
+    def cages():
+        return render_template("page.html", title="Cages", eyebrow="Colony Management")
+
+    @app.route("/mice")
+    def mice():
+        return render_template("page.html", title="Mice", eyebrow="Colony Management")
+
+    @app.route("/breeding")
+    def breeding():
+        return render_template("page.html", title="Breeding", eyebrow="Breeding")
+
+    @app.route("/reports")
+    def reports():
+        return render_template("page.html", title="Reports", eyebrow="Analysis")
+
+    @app.route("/admin/users")
+    def admin_users():
+        return render_template("page.html", title="Admin Users", eyebrow="Administration")
+
+    return app
 
 
-
-load_dotenv()  # Load environment variables from .env file
-
-
-app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","sqlite:///lab_smart_track.db")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-db.init_app(app)
-
-
-# Register Blueprints
-app.register_blueprint(auth_bp)
-app.register_blueprint(main_bp)
-app.register_blueprint(breeding_bp)
-
-@app.cli.command("init-db")
-def init_db():
-    db.create_all()
-    print("Initialized LabSmartTrack database.")
-
-@app.breeding_bp.route("/breeding")
-def breeding():
-    return render_template("breeding.html")
+app = create_app()
 
 
 if __name__ == "__main__":
