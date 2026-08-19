@@ -9,6 +9,7 @@ from enum import Enum
 
 class CageType(Enum):
     """Types of cages in the facility."""
+    
     HOLDING = "Holding"
     MATING = "Mating"
     WEANING = "Weaning"

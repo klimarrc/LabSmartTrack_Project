@@ -1,13 +1,19 @@
 from io import BytesIO
-
 import qrcode
 from flask import Blueprint, redirect, render_template, request, send_file, session, url_for
-from data.breeding import DEMO_BREEDING_PAIRS, DEMO_LITTERS, DEMO_WAITING_FEMALES, DEMO_AVAILABLE_MALES, FACILITIES
 
+# 1. Import your new service and models!
+from api.services.breeding_service import BreedingService
+from api.models.mouse_model import Mouse
+from api.models.physical_model import Cage
 
+# 2. Keep the static data for things we haven't database-ified yet
+from data.breeding import DEMO_WAITING_FEMALES, DEMO_AVAILABLE_MALES, FACILITIES
 
 breeding_bp = Blueprint("breeding_views", __name__)
 
+# 3. Initialize your service!
+breeding_service = BreedingService()
 
 
 def all_rooms():
@@ -34,48 +40,44 @@ def all_rooms():
             )
     return rooms
 
-
 def breeding_pairs_from_session():
-    """
-    
-    Retrieve breeding pairs from the session, including hidden status.
-    Returns:
-        list of breeding pair dictionaries with the following keys:
-            - pair_id
-            - facility_id
-            - facility_name
-            - room_id
-            - room_name
-            - principal_investigator
-            - strain
-            - mating_type
-            - sire_id
-            - sire_source_cage_id
-            - dam_id
-            - dam2_id
-            - cage_id
-            - post_litter_male_plan
-            - start_date
-            - status
-            - is_hidden (boolean indicating if the pair is hidden)
-        """
-    saved_pairs = session.get("breeding_pairs")
-    if saved_pairs is None:
-        saved_pairs = DEMO_BREEDING_PAIRS.copy()
-
+    """Fetch real breeding pairs from the database using the Service."""
+    db_pairs = breeding_service.get_breeding_pairs()
     hidden_pair_ids = set(session.get("hidden_breeding_pair_ids", []))
-    # Build a list of breeding pairs with hidden status
+    
     pairs = []
-    for pair in saved_pairs:
-        display_pair = pair.copy()
-        display_pair["is_hidden"] = display_pair["pair_id"] in hidden_pair_ids
+    for pair in db_pairs:
+        """Convert the SQLAlchemy model instance to a dictionary 
+        for easier manipulation
+        """
+        display_pair = pair.to_dict()
+        
+        # Map the DB fields to the exact names your HTML template expects
+        display_pair["pair_id"] = pair.breeding_code
+        display_pair["is_hidden"] = pair.breeding_code in hidden_pair_ids
+        # Provide fallback values so the UI doesn't crash while you transition
+        display_pair["room_name"] = display_pair.get
+        ("room_name", "Unknown Room")
+        display_pair["facility_id"] = display_pair.get
+        ("facility_id", "Unknown Facility")
+        
         pairs.append(display_pair)
     return pairs
 
 
 def litters_from_session():
-    return session.get("litters", DEMO_LITTERS.copy())
-
+    """Fetch all litters from the database."""
+    db_litters = breeding_service.get_litters()
+    litters = []
+    for litter in db_litters:
+        display_litter = litter.to_dict()
+        display_litter["pair_id"] = (
+            litter.breeding_pair.breeding_code
+              if litter.breeding_pair 
+              else "Unknown"
+        )
+        litters.append(display_litter)
+    return litters
 
 def room_id_for_pair(pair_id):
     pair = breeding_pair_by_id(pair_id)

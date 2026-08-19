@@ -29,6 +29,7 @@ class Strain(db.Model):
         }
 
     def __repr__(self):
+        """ repr method for debugging and logging purposes. """
         return f"<Strain(id={self.id}, name='{self.name}')>"
 
 # --- 2. BreedingPair ---

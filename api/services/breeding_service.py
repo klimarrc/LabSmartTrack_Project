@@ -1,14 +1,11 @@
 from datetime import date, datetime, timedelta
-from typing import Optional
-
-from models import BreedingPair, Litter, db
-
-
-from datetime import date, datetime, timedelta
 from typing import List, Optional
 
-# Assumed imports based on your previous code
-from models import BreedingPair, Litter, db, Mouse, Cage
+# Make sure these point to your 'api' folder!
+from api.models.colony_model import BreedingPair, Litter
+from api.models.mouse_model import Mouse
+from api.models.physical_model import Cage
+from database import db
 
 
 class BreedingService:
