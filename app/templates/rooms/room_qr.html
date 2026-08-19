@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Room QR Codes | LabSmartTrack{% endblock %}
+{% block eyebrow %}Room Access{% endblock %}
+{% block page_title %}Room QR Codes{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Room Door QR Codes</h2>
+        <p>Print one QR code for each room door. Staff can scan it to open the room check page.</p>
+      </div>
+      <button class="button button-muted" type="button" onclick="window.print()">Print All</button>
+    </div>
+
+    <div class="room-card-grid">
+      {% for room in rooms %}
+        <article class="room-qr-card">
+          <div>
+            <p class="eyebrow">{{ room.id }}</p>
+            <h3>{{ room.name }}</h3>
+            <p class="location-path">
+              {{ room.city }} / {{ room.facility }} / {{ room.department }} / {{ room.room_number }}
+            </p>
+          </div>
+
+          <img
+            class="room-qr-image"
+            src="{{ url_for('room_qr.room_qr_code', room_id=room.id) }}"
+            alt="QR code for {{ room.name }}"
+          >
+
+          <div class="room-card-actions">
+            <a class="button" href="{{ url_for('room_qr.room_scan', room_id=room.id) }}">Open Room</a>
+            <a class="button button-muted" href="{{ url_for('room_qr.room_qr_code', room_id=room.id) }}" target="_blank">Open QR</a>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

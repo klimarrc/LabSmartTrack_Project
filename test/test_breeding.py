@@ -1,4 +1,4 @@
-from breeding import BreedingService
+from app.services.breeding_service import BreedingService
 from app import app
 from models import db
 import unittest

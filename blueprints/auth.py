@@ -19,7 +19,8 @@ def login():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         if username == os.getenv("ADMIN_USERNAME") and password == os.getenv("ADMIN_PASSWORD"):
-            session["user"] = {"username": username, "role": "admin"}
+            session["user"] = {"username": username, "role": "admin", "permissions": ["read", "write", "delete"]}
+            session.permanent = True  # Make the session permanent
             return redirect(url_for("main.dashboard"))
         error = "Invalid username or password."
     return render_template("login.html", error=error)

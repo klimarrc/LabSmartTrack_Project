@@ -1,1 +1,1 @@
-from enums import  MouseSex, MouseStatus
+from labsmarttrack_enums import  MouseSex, MouseStatus

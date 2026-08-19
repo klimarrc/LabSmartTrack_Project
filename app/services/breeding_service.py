@@ -4,16 +4,23 @@ from typing import Optional
 from models import BreedingPair, Litter, db
 
 
+from datetime import date, datetime, timedelta
+from typing import List, Optional
+
+# Assumed imports based on your previous code
+from models import BreedingPair, Litter, db, Mouse, Cage
+
+
 class BreedingService:
     """Database operations for breeding pairs and litters."""
 
     def create_breeding_pair(
         self,
         breeding_code: str,
-        dam,
-        sire,
-        cage=None,
-        dam2=None,
+        dam: Mouse,
+        sire: Mouse,
+        cage: Optional[Cage] = None,
+        dam2: Optional[Mouse] = None,
         principal_investigator: str = "",
         strain_name: str = "",
         mating_type: str = "Pair: 1 male + 1 female",
@@ -77,17 +84,70 @@ class BreedingService:
         db.session.commit()
         return breeding_pair
 
-    def get_breeding_pairs(self):
+    def get_breeding_pairs(self) -> List[BreedingPair]:
         return BreedingPair.query.order_by(BreedingPair.start_date.desc()).all()
 
-    def get_breeding_pair_by_id(self, pair_id: int):
+    def get_breeding_pair_by_id(self, pair_id: int) -> Optional[BreedingPair]:
         return BreedingPair.query.get(pair_id)
 
-    def get_breeding_pair_by_code(self, breeding_code: str):
+    def get_breeding_pair_by_code(self, breeding_code: str) -> Optional[BreedingPair]:
         return BreedingPair.query.filter_by(breeding_code=breeding_code).first()
 
-
+    @staticmethod
     def parse_date(value: str) -> Optional[date]:
         if not value:
             return None
         return datetime.strptime(value, "%Y-%m-%d").date()
+
+    def update_breeding_pair(self, breeding_pair: BreedingPair, **kwargs) -> BreedingPair:
+        if breeding_pair is None:
+            raise ValueError("Breeding pair is required.")
+
+        for key, value in kwargs.items():
+            if hasattr(breeding_pair, key):
+                setattr(breeding_pair, key, value)
+
+        db.session.commit()
+        return breeding_pair
+
+    def update_litter(self, litter: Litter, **kwargs) -> Litter:
+        if litter is None:
+            raise ValueError("Litter is required.")
+
+        for key, value in kwargs.items():
+            if hasattr(litter, key):
+                setattr(litter, key, value)
+
+        db.session.commit()
+        return litter
+
+    def get_litters(self) -> List[Litter]:
+        return Litter.query.order_by(Litter.born_date.desc()).all()
+    
+    def get_litter_by_id(self, litter_id: int) -> Optional[Litter]:
+        return Litter.query.get(litter_id)
+    
+    def get_litter_by_code(self, litter_code: str) -> Optional[Litter]:
+        return Litter.query.filter_by(litter_code=litter_code).first()
+    
+    def get_litters_by_breeding_pair(self, breeding_pair: BreedingPair) -> List[Litter]:
+        if breeding_pair is None:
+            raise ValueError("Breeding pair is required.")
+        return Litter.query.filter_by(breeding_pair_id=breeding_pair.id).order_by(Litter.born_date.desc()).all()
+
+    def delete_breeding_pair(self, breeding_pair: BreedingPair) -> None:
+        if breeding_pair is None:
+            raise ValueError("Breeding pair is required.")
+
+        db.session.delete(breeding_pair)
+        db.session.commit()
+    
+    def delete_litter(self, litter: Litter) -> None:
+        if litter is None:
+            raise ValueError("Litter is required.") 
+        
+        db.session.delete(litter)
+        db.session.commit()
+
+    def get_active_breeding_pairs(self) -> List[BreedingPair]:
+        return BreedingPair.query.filter_by(status="active").order_by(BreedingPair.start_date.desc()).all()

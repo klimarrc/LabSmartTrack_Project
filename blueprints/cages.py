@@ -3,7 +3,7 @@ from io import BytesIO
 import qrcode
 from flask import Blueprint, redirect, render_template, send_file, url_for
 
-from roomQr import ROOMS
+from blueprints.room_qr import ROOMS
 
 
 cages_bp = Blueprint("cages", __name__)
