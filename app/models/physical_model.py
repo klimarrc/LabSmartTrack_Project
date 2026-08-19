@@ -20,8 +20,17 @@ class Location(db.Model):
     name = db.Column(db.String(100), nullable=False)
 
     # Relationships: A location can have many facilities.
-    facilities = db.relationship('Facility', back_populates='location',
-                                 cascade='all, delete-orphan')
+    facilities = db.relationship('Facility', back_populates='location')
+
+    def to_dict(self):
+        """Convert the Location object to a dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+    def __repr__(self):
+        return f"<Location(id={self.id}, name='{self.name}')>"
 
 # --- 2. FACILITY ---
 class Facility(db.Model):
@@ -43,8 +52,18 @@ class Facility(db.Model):
     location = db.relationship('Location', back_populates='facilities')
 
     # Relationships: A falicity can have many rooms.
-    rooms = db.relationship('Room', back_populates='facility',
-                            cascade='all, delete-orphan')
+    rooms = db.relationship('Room', back_populates='facility')
+
+    def to_dict(self):
+        """Convert the Facility object to a dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'location_id': self.location_id
+        }
+
+    def __repr__(self):
+        return f"<Facility(id={self.id}, name='{self.name}')>"
 
 # --- 3. ROOM ---
 class Room(db.Model):
@@ -65,8 +84,17 @@ class Room(db.Model):
     # Relationship: A room belongs to a facility.
     facility = db.relationship('Facility', back_populates='rooms')
     # Relationships: A room can have many racks.
-    racks = db.relationship('Rack', back_populates='room',
-                            cascade='all, delete-orphan')
+    racks = db.relationship('Rack', back_populates='room')
+
+    def to_dict(self):
+        """Convert the Room object to a dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'facility_id': self.facility_id
+        }
+    def __repr__(self):
+        return f"<Room(id={self.id}, name='{self.name}')>"
       
 # -- 4. RACK ---
 class Rack(db.Model):
@@ -86,8 +114,18 @@ class Rack(db.Model):
     # Relationship: A rack belongs to a room.
     room = db.relationship('Room', back_populates='racks')
     # Relationships: A rack can have many cages.
-    cages = db.relationship('Cage', back_populates='rack',
-                            cascade='all, delete-orphan')
+    cages = db.relationship('Cage', back_populates='rack')
+
+    def to_dict(self):
+        """Convert the Rack object to a dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'room_id': self.room_id
+        }
+
+    def __repr__(self):
+        return f"<Rack(id={self.id}, name='{self.name}')>"
 
 # --- 5. CAGE ---
 class Cage(db.Model):
@@ -108,25 +146,16 @@ class Cage(db.Model):
     
     # Relationship: A cage can have many mice. 
     mice = db.relationship('Mouse', back_populates='cage')
-
+    breeding_pairs = db.relationship('BreedingPair', back_populates='cage')
 
     def to_dict(self):
-        """Return a dictionary representation of the cage and its hierarchy."""
-        rack = self.rack
-        room = rack.room if rack else None
-        facility = room.facility if room else None
-        location = facility.location if facility else None
-
+        """Convert the Cage object to a dictionary."""
         return {
             'id': self.id,
-            'cage_id': self.id,
             'name': self.name,
-            'rack_id': rack.id if rack else None,
-            'rack_name': rack.name if rack else None,
-            'room_id': room.id if room else None,
-            'room_name': room.name if room else None,
-            'facility_id': facility.id if facility else None,
-            'facility_name': facility.name if facility else None,
-            'location_id': location.id if location else None,
-            'location_name': location.name if location else None,
+            'rack_id': self.rack_id
         }
+
+    def __repr__(self):
+        return f"<Cage(id={self.id}, name='{self.name}')>"
+    
