@@ -1,10 +1,11 @@
-from flask_sqlalchemy import SQLAlchemy
+"""
+Physical Location Models.
 
-import os
-import sys
-from labsmarttrack_enums import MouseStatus, MouseSex
+This module defines the physical hierarchy of the LabSmartTrack app,
+including Facilities, Rooms, Racks, and Cages.
+"""
 
-db = SQLAlchemy()
+from database import db
 
 #-- 1. LOCATION ---
 class Location(db.Model):
@@ -106,59 +107,20 @@ class Cage(db.Model):
     rack = db.relationship('Rack', back_populates='cages')
     
     # Relationship: A cage can have many mice. 
-    # NOTE: Removed 'cascade=all, delete-orphan' to protect your mouse records!
     mice = db.relationship('Mouse', back_populates='cage')
 
 
-# --- 6. MOUSE ---
-class Mouse(db.Model):
-    """
-    Mouse model represents a mouse within a cage.
-    """
-    __tablename__ = 'mice'
-
-    id = db.Column(db.Integer, primary_key=True)
-    age = db.Column(db.Integer, nullable=True)
-    strain = db.Column(db.String(100), nullable=True)
-    gender = db.Column(db.Enum(MouseSex), nullable=False, default=MouseSex.UNKNOWN)
-    PI = db.Column(db.String(100), nullable=True)
-    status = db.Column(db.Enum(MouseStatus), nullable=True)
-    is_hidden = db.Column(db.Boolean, default=False)
-    genotype = db.Column(db.String(100), nullable=True)
-    birth_date = db.Column(db.Date, nullable=True)
-    death_date = db.Column(db.Date, nullable=True)
-    weight = db.Column(db.Float, nullable=True)
-    notes = db.Column(db.Text, nullable=True)
-    protocol_id = db.Column(db.Integer, nullable=True)
-
-    # Foreign Keys (Defined exactly once)
-    cage_id = db.Column(db.Integer, db.ForeignKey('cages.id'), nullable=True)
-    litter_id = db.Column(db.Integer, db.ForeignKey('litters.id'), nullable=True)
-
-    # Relationships
-    litter = db.relationship('Litter', back_populates='mice')
-    cage = db.relationship('Cage', back_populates='mice')
-
     def to_dict(self):
-        """Return a dictionary representation of the mouse and its hierarchy."""
-        cage = self.cage
-        rack = cage.rack if cage else None
+        """Return a dictionary representation of the cage and its hierarchy."""
+        rack = self.rack
         room = rack.room if rack else None
         facility = room.facility if room else None
         location = facility.location if facility else None
-        gender_value = self.gender.value if isinstance(self.gender, MouseSex) else self.gender
-        status_value = self.status.value if isinstance(self.status, MouseStatus) else self.status
 
         return {
             'id': self.id,
-            'mouse_id': self.id,
-            'age': self.age,
-            'gender': gender_value,
-            'strain': self.strain,
-            'litter_id': self.litter_id,
-            'litter_name': self.litter.name if self.litter and hasattr(self.litter, 'name') else None,
-            'cage_id': cage.id if cage else None,
-            'cage_name': cage.name if cage else None,
+            'cage_id': self.id,
+            'name': self.name,
             'rack_id': rack.id if rack else None,
             'rack_name': rack.name if rack else None,
             'room_id': room.id if room else None,
@@ -167,22 +129,4 @@ class Mouse(db.Model):
             'facility_name': facility.name if facility else None,
             'location_id': location.id if location else None,
             'location_name': location.name if location else None,
-            'status': status_value,
-            'is_hidden': self.is_hidden,
-            'genotype': self.genotype,
-            'birth_date': self.birth_date.isoformat() if self.birth_date else None,
-            'death_date': self.death_date.isoformat() if self.death_date else None,
-            'weight': self.weight,
-            'notes': self.notes,
-            'protocol_id': self.protocol_id,
         }
-
-    def __lt__(self, other):
-        if not isinstance(other, Mouse):
-            return NotImplemented
-        left = (self.strain or '', self.id or 0)
-        right = (other.strain or '', other.id or 0)
-        return left < right
-
-    def __repr__(self):
-        return f"<Mouse id={self.id} strain={self.strain!r} cage_id={self.cage_id}>"
