@@ -19,7 +19,7 @@ class Strain(db.Model):
 
     # Relationships: A strain can have many breeding pairs.
     breeding_pairs = db.relationship('BreedingPair', back_populates='strain')
-
+    
     def to_dict(self):
         """Convert the Strain object to a dictionary."""
         return {
