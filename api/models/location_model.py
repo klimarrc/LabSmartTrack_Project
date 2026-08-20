@@ -16,7 +16,7 @@ class Location(db.Model):
     """
     __tablename__ = 'locations'
 
-    id = db.Column(db.Integer, primary_key=True)
+    location_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
     # Relationships: A location can have many facilities.
@@ -25,7 +25,7 @@ class Location(db.Model):
     def to_dict(self):
         """Convert the Location object to a dictionary."""
         return {
-            'id': self.id,
+            'id': self.location_id,
             'name': self.name
         }
 
@@ -41,7 +41,7 @@ class Facility(db.Model):
     """
     __tablename__ = 'facilities'
 
-    id = db.Column(db.Integer, primary_key=True)
+    facility_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
     # Foreign key: Looks up the location_id in the locations table.
@@ -57,7 +57,7 @@ class Facility(db.Model):
     def to_dict(self):
         """Convert the Facility object to a dictionary."""
         return {
-            'id': self.id,
+            'id': self.facility_id,
             'name': self.name,
             'location_id': self.location_id
         }
@@ -105,7 +105,7 @@ class Rack(db.Model):
     """
     __tablename__ = 'racks'
 
-    id = db.Column(db.Integer, primary_key=True)
+    rack_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
     # Foreign key: Looks up the room_id in the rooms table.
@@ -119,13 +119,13 @@ class Rack(db.Model):
     def to_dict(self):
         """Convert the Rack object to a dictionary."""
         return {
-            'id': self.id,
+            'id': self.rack_id,
             'name': self.name,
             'room_id': self.room_id
         }
 
     def __repr__(self):
-        return f"<Rack(id={self.id}, name='{self.name}')>"
+        return f"<Rack(id={self.rack_id}, name='{self.name}')>"
 
 # --- 5. CAGE ---
 class Cage(db.Model):
@@ -135,7 +135,7 @@ class Cage(db.Model):
     """
     __tablename__ = 'cages'
 
-    id = db.Column(db.Integer, primary_key=True)
+    cage_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     
     # Foreign key: Looks up the rack_id in the racks table.
@@ -151,11 +151,10 @@ class Cage(db.Model):
     def to_dict(self):
         """Convert the Cage object to a dictionary."""
         return {
-            'id': self.id,
+            'id': self.cage_id,
             'name': self.name,
             'rack_id': self.rack_id
         }
 
     def __repr__(self):
-        return f"<Cage(id={self.id}, name='{self.name}')>"
-    
+        return f"<Cage(id={self.cage_id}, name='{self.name}')>"

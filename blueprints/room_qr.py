@@ -1,49 +1,48 @@
 from io import BytesIO
-
 import qrcode
-from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for
+from flask import Blueprint, flash, redirect, render_template, request, send_file, url_for   
 
-
-from room_data import ROOMS
-from room_service import (
-    get_room,
-    notification_service,
-    room_calendar,
-    room_location_label,
-    room_summary,
-)
-from messageSender import ConsoleSender, EmailSender, NotificationSender    
-
+# 2. Import your new database models and services
+from api.models.location_model import Room
+from api.services.location_service import LocationService
 
 room_qr_bp = Blueprint("room_qr", __name__)
-
+location_service = LocationService()
 
 @room_qr_bp.route("/rooms")
 def rooms():
-    return render_template("room_qr.html", rooms=ROOMS.values())
+    """
+    Display a list of all rooms across all facilities.
+    """
+    real_rooms = location_service.all_rooms()
+    return render_template("room_qr.html", rooms=real_rooms)
 
-
-@room_qr_bp.route("/rooms/<room_id>")
+@room_qr_bp.route("/rooms/<int:room_id>")
 def room_scan(room_id):
-    room = get_room(room_id)
+    """
+    Display the room dashboard for a specific room.
+    """
+    room = Room.query.get(room_id)
     if room is None:
         return "Room not found", 404
 
-    selected_year = request.args.get("year")
     selected_month = request.args.get("month")
 
     return render_template(
         "room_scan.html",
         room=room,
-        summary=room_summary(room),
-        location_label=room_location_label(room),
-        calendar_view=room_calendar(room, selected_year, selected_month),
+        selected_month=selected_month,
+        summary={},  # Placeholder until we build room_summary()
+        location_label=f"{room.facility.name if room.facility else ''} - {room.name}",
+        calendar_view=[],  # Placeholder until we build room_calendar()
     )
 
-
-@room_qr_bp.route("/rooms/<room_id>/qr.png")
+@room_qr_bp.route("/rooms/<int:room_id>/qr.png")
 def room_qr_code(room_id):
-    room = get_room(room_id)
+    """
+    Generate a QR code for the room that links to its dashboard.
+    """
+    room = Room.query.get(room_id)
     if room is None:
         return "Room not found", 404
 
@@ -55,29 +54,18 @@ def room_qr_code(room_id):
 
     return send_file(buffer, mimetype="image/png")
 
-
-@room_qr_bp.route("/rooms/<room_id>/check", methods=["POST"])
+@room_qr_bp.route("/rooms/<int:room_id>/check", methods=["POST"])
 def submit_room_check(room_id):
-    room = get_room(room_id)
+    room = Room.query.get(room_id)
     if room is None:
         return "Room not found", 404
 
     note = request.form.get("note", "").strip()
     staff_name = request.form.get("staff_name", "Staff").strip() or "Staff"
     supervisor_email = request.form.get("supervisor_email", "supervisor@example.com")
-    summary = room_summary(room)
-
-    notification_service().send_room_check_report(
-        room_name=room["name"],
-        staff_name=staff_name,
-        supervisor_email=supervisor_email,
-        weaning_due=summary["weaning_due"],
-        breeding=summary["breeding"],
-        plugs=summary["plugs"],
-        cages=summary["cages"],
-        mice=summary["mice"],
-        note=note,
-    )
+    
+    # Temporarily bypass the email sender and just print to the terminal!
+    print(f"📧 [EMAIL SIMULATION] To: {supervisor_email} | Room Check by {staff_name}: {note}")
 
     flash("Room check was sent to the supervisor.", "success")
     return redirect(url_for("room_qr.room_scan", room_id=room_id))

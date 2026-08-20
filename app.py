@@ -15,6 +15,8 @@ from blueprints.room_qr import room_qr_bp
 from blueprints.breeding import breeding_bp
 
 def create_app():
+    """Factory function to create and configure the Flask app."""
+    
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "labsmarttrack-dev-secret")
 

@@ -4,7 +4,7 @@ from datetime import date, datetime
 import core.message_sender as message_sender
 from core.message_sender import EmailSender
 
-from data.room_qr_data import ROOMS
+from data.room_data import ROOMS
 
 def get_room(room_id):
     """
