@@ -29,7 +29,7 @@ class Mouse(db.Model):
 
     # --- Foreign Keys ---
     strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'), nullable=True)
-    cage_id = db.Column(db.Integer, db.ForeignKey('cages.id'), nullable=True)
+    cage_id = db.Column(db.Integer, db.ForeignKey('cages.cage_id'), nullable=True)
     litter_id = db.Column(db.Integer, db.ForeignKey('litters.id'), nullable=True)
     protocol_id = db.Column(db.Integer, db.ForeignKey('protocols.id'), nullable=True)
     experiment_id = db.Column(db.Integer, db.ForeignKey('experiments.id'), nullable=True)

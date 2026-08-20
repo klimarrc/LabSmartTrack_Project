@@ -30,28 +30,26 @@ class Location(db.Model):
         }
 
     def __repr__(self):
-        return f"<Location(id={self.id}, name='{self.name}')>"
-
+        return f"<Location(id={self.location_id}, name='{self.name}')>"
+    
 # --- 2. FACILITY ---
 class Facility(db.Model):
     """
     Facility model represents a research facility where
     mice are housed and bred.
-
     """
     __tablename__ = 'facilities'
 
     facility_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100))
 
-    # Foreign key: Looks up the location_id in the locations table.
-    location_id = db.Column(db.Integer, db.ForeignKey('locations.id'),
-                             nullable=False)
+    # FIX: Changed 'locations.id' to 'locations.location_id' and removed primary_key=True
+    location_id = db.Column(db.Integer, db.ForeignKey('locations.location_id'))
 
     # Relationship: A facility belongs to a location.
     location = db.relationship('Location', back_populates='facilities')
 
-    # Relationships: A falicity can have many rooms.
+    # Relationships: A facility can have many rooms.
     rooms = db.relationship('Room', back_populates='facility')
 
     def to_dict(self):
@@ -63,23 +61,21 @@ class Facility(db.Model):
         }
 
     def __repr__(self):
-        return f"<Facility(id={self.id}, name='{self.name}')>"
+        return f"<Facility(id={self.facility_id}, name='{self.name}')>"
 
 # --- 3. ROOM ---
 class Room(db.Model):
     """
     Room model represents a room within a facility where
     mice are housed and bred.
-
     """
     __tablename__ = 'rooms'
 
-    id = db.Column(db.Integer, primary_key=True)
+    room_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-    # Foreign key: Looks up the facility_id in the facilities table.
-    facility_id = db.Column(db.Integer, db.ForeignKey('facilities.id'),
-                             nullable=False)
+    # FIX: Changed 'facilities.id' to 'facilities.facility_id' and removed primary_key=True
+    facility_id = db.Column(db.Integer, db.ForeignKey('facilities.facility_id'))
 
     # Relationship: A room belongs to a facility.
     facility = db.relationship('Facility', back_populates='rooms')
@@ -89,28 +85,27 @@ class Room(db.Model):
     def to_dict(self):
         """Convert the Room object to a dictionary."""
         return {
-            'id': self.id,
+            'id': self.room_id,
             'name': self.name,
             'facility_id': self.facility_id
         }
     def __repr__(self):
-        return f"<Room(id={self.id}, name='{self.name}')>"
+        return f"<Room(id={self.room_id}, name='{self.name}')>"
       
 # -- 4. RACK ---
 class Rack(db.Model):
     """
     Rack model represents a rack within a room where
     mice are housed and bred.
-
     """
     __tablename__ = 'racks'
 
     rack_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
-    # Foreign key: Looks up the room_id in the rooms table.
-    room_id = db.Column(db.Integer, db.ForeignKey('rooms.id'),
-                             nullable=False)
+    # FIX: Changed 'rooms.id' to 'rooms.room_id' and removed primary_key=True
+    room_id = db.Column(db.Integer, db.ForeignKey('rooms.room_id'))
+    
     # Relationship: A rack belongs to a room.
     room = db.relationship('Room', back_populates='racks')
     # Relationships: A rack can have many cages.
@@ -138,8 +133,8 @@ class Cage(db.Model):
     cage_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     
-    # Foreign key: Looks up the rack_id in the racks table.
-    rack_id = db.Column(db.Integer, db.ForeignKey('racks.id'), nullable=False)
+    # FIX: Changed 'racks.id' to 'racks.rack_id' and removed primary_key=True
+    rack_id = db.Column(db.Integer, db.ForeignKey('racks.rack_id'))
     
     # Relationship: A cage belongs to a rack.
     rack = db.relationship('Rack', back_populates='cages')

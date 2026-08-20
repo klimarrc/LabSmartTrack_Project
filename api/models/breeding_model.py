@@ -36,7 +36,6 @@ class Strain(db.Model):
 class BreedingPair(db.Model):
     """
     BreedingPair model represents a pair of mice used for breeding.
-
     """
     __tablename__ = 'breeding_pairs'
 
@@ -47,14 +46,16 @@ class BreedingPair(db.Model):
     mating_type = db.Column(db.String(100), nullable=True)
 
     # Foreign Keys connecting to the Mouse model
+    # (Assuming your Mouse model uses 'id' as its primary key. If it uses 'mouse_id', change these to 'mice.mouse_id')
     sire_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
     dam_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
     dam2_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=True)
 
-    # Foreign Keys connecting to the Cage model
-    strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'),
-                           nullable=True)
-    cage_id = db.Column(db.Integer, db.ForeignKey('cages.id'), nullable=True)
+    # Foreign Keys connecting to the Strain and Cage models
+    strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'), nullable=True)
+    
+    # FIX: Changed 'cages.id' to 'cages.cage_id'
+    cage_id = db.Column(db.Integer, db.ForeignKey('cages.cage_id'), nullable=True)
 
     # Relationships
     strain = db.relationship('Strain', back_populates='breeding_pairs')
@@ -83,7 +84,6 @@ class BreedingPair(db.Model):
 
     def __repr__(self):
         return f"<BreedingPair(code='{self.breeding_code}')>"
-
 # --- 3. Litter ---
 class Litter(db.Model):
     """

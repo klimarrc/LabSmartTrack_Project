@@ -44,4 +44,5 @@ class MouseStatus(Enum):
     WEANED = "Weaned"
     RETIRED = "Retired"
     DECEASED = "Deceased"
+    ACTIVE = "Active"
     
