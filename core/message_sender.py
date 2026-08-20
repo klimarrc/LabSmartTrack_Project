@@ -31,6 +31,8 @@ class EmailSender:
         )
 
     def send(self, subject: str, message: str, recipient: str) -> None:
+        """Send an email message to one recipient."""
+
         email = EmailMessage()
         email["Subject"] = subject
         email["From"] = self.sender_email

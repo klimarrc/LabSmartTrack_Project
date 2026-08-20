@@ -5,8 +5,8 @@ from flask import Flask, redirect, render_template, session, url_for
 from database import db
 
 # 2. Import your models so SQLAlchemy knows what tables to create!
-from api.models.physical_model import Location, Facility, Room, Rack, Cage
-from api.models.colony_model import Strain, BreedingPair, Litter
+from api.models.location_model import Location, Facility, Room, Rack, Cage
+from api.models.breeding_model import Strain, BreedingPair, Litter
 from api.models.experiment_model import Protocol, Experiment
 from api.models.mouse_model import Mouse
 

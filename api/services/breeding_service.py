@@ -2,9 +2,9 @@ from datetime import date, datetime, timedelta
 from typing import List, Optional
 
 # Make sure these point to your 'api' folder!
-from api.models.colony_model import BreedingPair, Litter
+from api.models.breeding_model import BreedingPair, Litter
 from api.models.mouse_model import Mouse
-from api.models.physical_model import Cage
+from api.models.location_model import Cage
 from database import db
 
 

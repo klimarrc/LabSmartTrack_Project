@@ -12,8 +12,8 @@ from database import db
 from labsmarttrack_enums import MouseSex, MouseStatus
 
 # Import ALL your models using their actual file paths in your project!
-from api.models.physical_model import Location, Facility, Room, Rack, Cage
-from api.models.colony_model import Strain, BreedingPair, Litter
+from api.models.location_model import Location, Facility, Room, Rack, Cage
+from api.models.breeding_model import Strain, BreedingPair, Litter
 from api.models.experiment_model import Protocol, Experiment
 from api.models.mouse_model import Mouse
 
