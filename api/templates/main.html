@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | LabSmartTrack{% endblock %}
+{% block eyebrow %}Overview{% endblock %}
+{% block page_title %}Main Dashboard{% endblock %}
+
+{% block content %}
+  <section class="grid">
+    <article class="stat-card">
+      <span>Rooms</span>
+      <strong>{{ room_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Cages</span>
+      <strong>{{ cage_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Mice</span>
+      <strong>{{ mouse_count | default(0) }}</strong>
+    </article>
+    <article class="stat-card">
+      <span>Weaning Due</span>
+      <strong>{{ weaning_due | default(0) }}</strong>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="section-header">
+      <div>
+        <h2>Welcome to LabSmartTrack</h2>
+        <p>Administration updates, laboratory animal science news, and training resources for mouse colony work.</p>
+      </div>
+    </div>
+
+    <div class="dashboard-info-grid">
+      <article class="info-card admin-card">
+        <span class="info-label">Administration</span>
+        <h3>Facility Notices</h3>
+        <ul class="info-list">
+          <li>Review room checks before supervisor submission.</li>
+          <li>Confirm weaning dates and retired mating records weekly.</li>
+          <li>Keep PI, strain, cage, and mouse counts current for reports.</li>
+        </ul>
+      </article>
+
+      <article class="info-card">
+        <span class="info-label">CALAS / ACSAL</span>
+        <h3>Lab Animal Science News</h3>
+        <p>Follow Canadian laboratory animal science updates, symposium information, and professional development through CALAS / ACSAL.</p>
+        <a class="resource-link" href="https://calas-acsal.org/" target="_blank" rel="noreferrer">Open CALAS / ACSAL</a>
+      </article>
+
+      <article class="info-card">
+        <span class="info-label">Scientists</span>
+        <h3>Research Mouse Notes</h3>
+        <p>Track strain, genotype, breeding output, litter history, weaning performance, and retirement timing for each PI group.</p>
+        <div class="tag-list">
+          <span>Strain</span>
+          <span>Genotype</span>
+          <span>Breeding</span>
+          <span>Weaning</span>
+        </div>
+      </article>
+
+      <article class="info-card">
+        <span class="info-label">Courses</span>
+        <h3>Training Resources</h3>
+        <ul class="resource-list">
+          <li><a href="https://ccac.ca/en/training/" target="_blank" rel="noreferrer">CCAC training</a></li>
+          <li><a href="https://www.aalas.org/education" target="_blank" rel="noreferrer">AALAS education</a></li>
+          <li><a href="https://calas-acsal.org/" target="_blank" rel="noreferrer">CALAS / ACSAL events</a></li>
+        </ul>
+      </article>
+
+      <article class="info-card">
+        <span class="info-label">Other Institutes</span>
+        <h3>Mouse and Animal Care Resources</h3>
+        <ul class="resource-list">
+          <li><a href="https://www.jax.org/" target="_blank" rel="noreferrer">The Jackson Laboratory</a></li>
+          <li><a href="https://www.informatics.jax.org/" target="_blank" rel="noreferrer">Mouse Genome Informatics</a></li>
+          <li><a href="https://nc3rs.org.uk/" target="_blank" rel="noreferrer">NC3Rs</a></li>
+          <li><a href="https://iclas.org/" target="_blank" rel="noreferrer">ICLAS</a></li>
+          <li><a href="https://felasa.eu/" target="_blank" rel="noreferrer">FELASA</a></li>
+          <li><a href="https://olaw.nih.gov/" target="_blank" rel="noreferrer">NIH OLAW</a></li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="dashboard-news-strip">
+      <strong>Suggested dashboard use:</strong>
+      <span>Use this area for admin announcements, CALAS links, JAX/MGI mouse resources, animal welfare updates, PI-specific training, and facility SOP updates.</span>
+    </div>
+  </section>
+{% endblock %}

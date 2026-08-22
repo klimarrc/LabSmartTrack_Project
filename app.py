@@ -1,18 +1,28 @@
+"""LabSmartTrack - A Flask application for managing laboratory mice and breeding.
+This application provides a web interface for tracking laboratory mice, breeding 
+pairs, litters, and related experimental data. It includes user authentication,
+authorization, and data management features.
+"""
 import os
 
-from flask import Flask, redirect, render_template, session, url_for
+from flask import Flask
+from flask_login import LoginManager
 
 from database import db
 
-# Import models so SQLAlchemy can discover their tables.
-from api.models.location_model import Location, Facility, Room, Rack, Cage
-from api.models.breeding_model import Strain, BreedingPair, Litter
-from api.models.experiment_model import Protocol, Experiment
-from api.models.mouse_model import Mouse
+from api.models.user_model import User
 
+
+from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
-from blueprints.room_qr import room_qr_bp
-from blueprints.breeding import breeding_bp
+
+login_manager = LoginManager()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    """Load a user by their unique identifier."""
+    return db.session.get(User, int(user_id))
 
 
 def create_app():
@@ -25,7 +35,6 @@ def create_app():
         "labsmarttrack-dev-secret"
     )
 
-    # Create the instance directory if it does not exist.
     basedir = os.path.abspath(os.path.dirname(__file__))
     instance_directory = os.path.join(basedir, "instance")
     os.makedirs(instance_directory, exist_ok=True)
@@ -42,63 +51,16 @@ def create_app():
 
     db.init_app(app)
 
-    # Create tables that do not already exist.
+    login_manager.init_app(app)
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = "Please log in to continue."
+
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(dashboard_bp)
+    
+
     with app.app_context():
         db.create_all()
-        print("Database connected and tables verified.")
-
-    app.register_blueprint(dashboard_bp)
-    app.register_blueprint(breeding_bp)
-    app.register_blueprint(room_qr_bp)
-
-    @app.context_processor
-    def inject_current_user():
-        return {"current_user": session.get("user")}
-
-    @app.route("/login")
-    def login():
-        session["user"] = {
-            "name": "Demo Staff",
-            "role": "staff"
-        }
-        return redirect(url_for("dashboard.dashboard"))
-
-    @app.route("/logout")
-    def logout():
-        session.clear()
-        return redirect(url_for("dashboard.dashboard"))
-
-    @app.route("/cages")
-    def cages():
-        return render_template(
-            "page.html",
-            title="Cages",
-            eyebrow="Colony Management"
-        )
-
-    @app.route("/mice")
-    def mice():
-        return render_template(
-            "page.html",
-            title="Mice",
-            eyebrow="Colony Management"
-        )
-
-    @app.route("/reports")
-    def reports():
-        return render_template(
-            "page.html",
-            title="Reports",
-            eyebrow="Analysis"
-        )
-
-    @app.route("/admin/users")
-    def admin_users():
-        return render_template(
-            "page.html",
-            title="Admin Users",
-            eyebrow="Administration"
-        )
 
     return app
 

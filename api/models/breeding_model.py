@@ -2,7 +2,60 @@
 
 from database import db
 
-# --- 1. Strain ---
+# --- 1. BreedingPair ---
+class BreedingPair(db.Model):
+    """
+    BreedingPair model represents a pair of mice used for breeding.
+    """
+    __tablename__ = 'breeding_pairs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    breeding_code = db.Column(db.String(100),unique=True, nullable=False)
+    principal_investigator = db.Column(db.String(100), nullable=True)
+    strain_name = db.Column(db.String(100), nullable=True)
+    mating_type = db.Column(db.String(100), nullable=True)
+
+    # Foreign Keys connecting to the Mouse model
+    # (Assuming your Mouse model uses 'id' as its primary key. If it uses 
+    # 'mouse_id', change these to 'mice.mouse_id')
+    sire_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
+    dam_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
+    dam2_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=True)
+
+    # Foreign Keys connecting to the Strain and Cage models
+    strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'), nullable=True)
+    cage_id = db.Column(db.Integer, db.ForeignKey('cages.cage_id'), nullable=True)
+
+    # Relationships
+    strain = db.relationship('Strain', back_populates='breeding_pairs')
+    cage = db.relationship('Cage', back_populates='breeding_pairs')
+
+    sire = db.relationship('Mouse', foreign_keys=[sire_id], backref='sire_of')
+    dam = db.relationship('Mouse', foreign_keys=[dam_id], backref='dam_of')
+    dam2 = db.relationship('Mouse', foreign_keys=[dam2_id], backref='dam2_of')
+
+    # Relationships: A breeding pair can have many litters.
+    litters = db.relationship('Litter', back_populates='breeding_pair')
+   
+
+    def to_dict(self):
+        """Convert the BreedingPair object to a dictionary."""
+        return {
+            'id': self.id,
+            'breeding_code': self.breeding_code,
+            'principal_investigator': self.principal_investigator,
+            'mating_type': self.mating_type,
+            'sire_id': self.sire_id,
+            'dam_id': self.dam_id,
+            'dam2_id': self.dam2_id,
+            'cage_id': self.cage_id,
+            'strain_id': self.strain_id
+        }
+
+    def __repr__(self):
+        return f"<BreedingPair(code='{self.breeding_code}')>"
+
+# --- 2. Strain ---
 class Strain(db.Model):
     """
     Strain model represents a specific strain of mice in the facility.
@@ -32,58 +85,6 @@ class Strain(db.Model):
         """ repr method for debugging and logging purposes. """
         return f"<Strain(id={self.id}, name='{self.name}')>"
 
-# --- 2. BreedingPair ---
-class BreedingPair(db.Model):
-    """
-    BreedingPair model represents a pair of mice used for breeding.
-    """
-    __tablename__ = 'breeding_pairs'
-
-    id = db.Column(db.Integer, primary_key=True)
-    breeding_code = db.Column(db.String(100), nullable=False, unique=True)
-    principal_investigator = db.Column(db.String(100), nullable=True)
-    strain_name = db.Column(db.String(100), nullable=True)
-    mating_type = db.Column(db.String(100), nullable=True)
-
-    # Foreign Keys connecting to the Mouse model
-    # (Assuming your Mouse model uses 'id' as its primary key. If it uses 'mouse_id', change these to 'mice.mouse_id')
-    sire_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
-    dam_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=False)
-    dam2_id = db.Column(db.Integer, db.ForeignKey('mice.id'), nullable=True)
-
-    # Foreign Keys connecting to the Strain and Cage models
-    strain_id = db.Column(db.Integer, db.ForeignKey('strains.id'), nullable=True)
-    
-    # FIX: Changed 'cages.id' to 'cages.cage_id'
-    cage_id = db.Column(db.Integer, db.ForeignKey('cages.cage_id'), nullable=True)
-
-    # Relationships
-    strain = db.relationship('Strain', back_populates='breeding_pairs')
-    cage = db.relationship('Cage', back_populates='breeding_pairs')
-
-    sire = db.relationship('Mouse', foreign_keys=[sire_id], backref='sire_of')
-    dam = db.relationship('Mouse', foreign_keys=[dam_id], backref='dam_of')
-    dam2 = db.relationship('Mouse', foreign_keys=[dam2_id], backref='dam2_of')
-
-    # Relationships: A breeding pair can have many litters.
-    litters = db.relationship('Litter', back_populates='breeding_pair')
-
-    def to_dict(self):
-        """Convert the BreedingPair object to a dictionary."""
-        return {
-            'id': self.id,
-            'breeding_code': self.breeding_code,
-            'principal_investigator': self.principal_investigator,
-            'mating_type': self.mating_type,
-            'sire_id': self.sire_id,
-            'dam_id': self.dam_id,
-            'dam2_id': self.dam2_id,
-            'cage_id': self.cage_id,
-            'strain_id': self.strain_id
-        }
-
-    def __repr__(self):
-        return f"<BreedingPair(code='{self.breeding_code}')>"
 # --- 3. Litter ---
 class Litter(db.Model):
     """

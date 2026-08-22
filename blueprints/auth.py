@@ -1,31 +1,47 @@
-import os
-from functools import wraps
-from flask import Blueprint, redirect, render_template, request, session, url_for
+""" 
+Blueprint for authentication routes.
+This module defines the routes for user login and logout functionality.
+"""
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask_login import current_user, login_user, logout_user
+
+from api.models.user_model import User
 
 auth_bp = Blueprint("auth", __name__)
 
-def login_required(route_function):
-    @wraps(route_function)
-    def wrapper(*args, **kwargs):
-        if not session.get("user"):
-            return redirect(url_for("auth.login"))
-        return route_function(*args, **kwargs)
-    return wrapper
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    error = None
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        if username == os.getenv("ADMIN_USERNAME") and password == os.getenv("ADMIN_PASSWORD"):
-            session["user"] = {"username": username, "role": "admin", "permissions": ["read", "write", "delete"]}
-            session.permanent = True  # Make the session permanent
-            return redirect(url_for("main.dashboard"))
-        error = "Invalid username or password."
-    return render_template("login.html", error=error)
+    """Handle user login requests."""
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard.dashboard"))
 
-@auth_bp.route("/logout")
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        user = User.query.filter_by(email=email).first()
+
+        if user is None or not user.check_password(password):
+            flash("Incorrect email or password.", "error")
+            return render_template("login.html")
+
+        if not user.active:
+            flash("This account is inactive.", "error")
+            return render_template("login.html")
+
+        login_user(user)
+
+        return redirect(url_for("dashboard.dashboard"))
+
+    return render_template("login.html")
+
+
+@auth_bp.route("/logout", methods=["POST"])
 def logout():
-    session.clear()
+    """Handle user logout requests."""
+    logout_user()
+    flash("You have been logged out.", "success")
+
     return redirect(url_for("auth.login"))

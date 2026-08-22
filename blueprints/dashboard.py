@@ -1,3 +1,5 @@
+""" Dashboard blueprint for the LabSmartTrack application. """
+
 from flask import Blueprint, render_template
 
 # Import your models so we can query the database
@@ -8,6 +10,7 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/")
 def dashboard():
+    """Render the dashboard page with counts of rooms, cages, and mice."""
     # Query the database for the total counts
     total_rooms = Room.query.count()
     total_cages = Cage.query.count()
