@@ -1,6 +1,6 @@
 from app.services.breeding_service import BreedingService
 from app import app
-from models import db
+from api.models import db
 import unittest
 
 

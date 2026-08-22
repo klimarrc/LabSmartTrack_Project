@@ -1,8 +1,5 @@
-"""LabSmartTrack - A Flask application for managing laboratory mice and breeding.
-This application provides a web interface for tracking laboratory mice, breeding 
-pairs, litters, and related experimental data. It includes user authentication,
-authorization, and data management features.
-"""
+"""LabSmartTrack Flask application."""
+
 import os
 
 from flask import Flask
@@ -10,11 +7,13 @@ from flask_login import LoginManager
 
 from database import db
 
+# Import every model so SQLAlchemy can register all relationships.
 from api.models.user_model import User
 
 
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
+
 
 login_manager = LoginManager()
 
@@ -22,6 +21,7 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
     """Load a user by their unique identifier."""
+
     return db.session.get(User, int(user_id))
 
 
@@ -32,7 +32,7 @@ def create_app():
 
     app.config["SECRET_KEY"] = os.getenv(
         "SECRET_KEY",
-        "labsmarttrack-dev-secret"
+        "labsmarttrack-dev-secret",
     )
 
     basedir = os.path.abspath(os.path.dirname(__file__))
@@ -41,7 +41,7 @@ def create_app():
 
     database_path = os.path.join(
         instance_directory,
-        "labsmarttrack.db"
+        "labsmarttrack.db",
     )
 
     app.config["SQLALCHEMY_DATABASE_URI"] = (
@@ -57,7 +57,6 @@ def create_app():
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
-    
 
     with app.app_context():
         db.create_all()

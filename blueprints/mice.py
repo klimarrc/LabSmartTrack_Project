@@ -1,1 +1,0 @@
-from labsmarttrack_enums import  MouseSex, MouseStatus
