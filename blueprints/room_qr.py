@@ -56,6 +56,9 @@ def room_qr_code(room_id):
 
 @room_qr_bp.route("/rooms/<int:room_id>/check", methods=["POST"])
 def submit_room_check(room_id):
+    """
+    Handle the submission of a room check form.
+    """
     room = Room.query.get(room_id)
     if room is None:
         return "Room not found", 404

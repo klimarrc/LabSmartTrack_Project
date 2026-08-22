@@ -1,10 +1,10 @@
 import os
+
 from flask import Flask, redirect, render_template, session, url_for
 
-# 1. Import your database instance
 from database import db
 
-# 2. Import your models so SQLAlchemy knows what tables to create!
+# Import models so SQLAlchemy can discover their tables.
 from api.models.location_model import Location, Facility, Room, Rack, Cage
 from api.models.breeding_model import Strain, BreedingPair, Litter
 from api.models.experiment_model import Protocol, Experiment
@@ -14,26 +14,38 @@ from blueprints.dashboard import dashboard_bp
 from blueprints.room_qr import room_qr_bp
 from blueprints.breeding import breeding_bp
 
+
 def create_app():
-    """Factory function to create and configure the Flask app."""
-    
+    """Create and configure the Flask application."""
+
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "labsmarttrack-dev-secret")
 
-    # --- DATABASE SETUP ---
-    # Create the database file inside your 'instance' folder
+    app.config["SECRET_KEY"] = os.getenv(
+        "SECRET_KEY",
+        "labsmarttrack-dev-secret"
+    )
+
+    # Create the instance directory if it does not exist.
     basedir = os.path.abspath(os.path.dirname(__file__))
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'labsmarttrack.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    instance_directory = os.path.join(basedir, "instance")
+    os.makedirs(instance_directory, exist_ok=True)
 
-    # Connect the database to this Flask app
+    database_path = os.path.join(
+        instance_directory,
+        "labsmarttrack.db"
+    )
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"sqlite:///{database_path}"
+    )
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
     db.init_app(app)
 
-    # Create the tables! (This runs once when the app starts)
+    # Create tables that do not already exist.
     with app.app_context():
         db.create_all()
-        print("✅ Database successfully connected and tables verified!")
-    # ----------------------
+        print("Database connected and tables verified.")
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(breeding_bp)
@@ -45,7 +57,10 @@ def create_app():
 
     @app.route("/login")
     def login():
-        session["user"] = {"name": "Demo Staff", "role": "staff"}
+        session["user"] = {
+            "name": "Demo Staff",
+            "role": "staff"
+        }
         return redirect(url_for("dashboard.dashboard"))
 
     @app.route("/logout")
@@ -53,33 +68,43 @@ def create_app():
         session.clear()
         return redirect(url_for("dashboard.dashboard"))
 
-    @app.route("/roomQr")
-    def room_qr():
-        return render_template("page.html", title="Room QR Codes", eyebrow="Colony Management")
-    
     @app.route("/cages")
     def cages():
-        return render_template("page.html", title="Cages", eyebrow="Colony Management")
+        return render_template(
+            "page.html",
+            title="Cages",
+            eyebrow="Colony Management"
+        )
 
     @app.route("/mice")
     def mice():
-        return render_template("page.html", title="Mice", eyebrow="Colony Management")
-
-    @app.route("/breeding")
-    def breeding():
-        return render_template("page.html", title="Breeding", eyebrow="Breeding")
+        return render_template(
+            "page.html",
+            title="Mice",
+            eyebrow="Colony Management"
+        )
 
     @app.route("/reports")
     def reports():
-        return render_template("page.html", title="Reports", eyebrow="Analysis")
+        return render_template(
+            "page.html",
+            title="Reports",
+            eyebrow="Analysis"
+        )
 
     @app.route("/admin/users")
     def admin_users():
-        return render_template("page.html", title="Admin Users", eyebrow="Administration")
-    
+        return render_template(
+            "page.html",
+            title="Admin Users",
+            eyebrow="Administration"
+        )
+
     return app
 
+
 app = create_app()
+
 
 if __name__ == "__main__":
     app.run(debug=True)

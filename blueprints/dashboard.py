@@ -1,16 +1,22 @@
 from flask import Blueprint, render_template
 
-dashboard_bp = Blueprint("dashboard", __name__)
+# Import your models so we can query the database
+from api.models.location_model import Room, Cage
+from api.models.mouse_model import Mouse
 
+dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/")
 def dashboard():
+    # Query the database for the total counts
+    total_rooms = Room.query.count()
+    total_cages = Cage.query.count()
+    total_mice = Mouse.query.count()
+
     return render_template(
         "dashboard.html",
-        room_count=0,
-        cage_count=0,
-        mouse_count=0,
-        weaning_due=0,
-        active_matings=0,
-        plug_count=0,
+        room_count=total_rooms,
+        cage_count=total_cages,
+        mouse_count=total_mice,
+        weaning_due=0,  # We can build the logic for this later!
     )

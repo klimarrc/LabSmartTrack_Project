@@ -6,6 +6,9 @@ from api.models.location_model import Facility, Room
 
 
 class LocationService:
+    """
+    Service class to handle location-related operations.
+    """
     
     def all_facilities(self):
         """
@@ -15,7 +18,7 @@ class LocationService:
         facilities = []
         for facility in db_facilities:
             facilities.append({
-                "facility_id": facility.id,
+                "facility_id": facility.facility_id,
                 "name": facility.name,
             })
         return facilities
@@ -30,7 +33,7 @@ class LocationService:
             rooms.append({
                 "facility_id": room.facility_id,
                 "facility_name": room.facility.name if room.facility else "Unknown",
-                "room_id": room.id,
+                "room_id": room.room_id,
                 "name": room.name,
             })
         return rooms
