@@ -1,27 +1,63 @@
 {% extends "base.html" %}
-{% block title %}Registration | LabSmartTrack{% endblock %}
-{% block eyebrow %}Account access{% endblock %}
-{% block page_title %}Staff registration{% endblock %}
+{% block title %}
+Registration | LabSmartTrack
+{% endblock %}
+{% block eyebrow %}
+Account access
+{% endblock %}
+{% block page_title %}
+Staff registration
+{% endblock %}
+
 {% block content %}
 <section class="panel auth-panel">
   <p>An administrator must approve your request before you can log in.</p>
   <form id="registration-form" method="POST" action="{{ url_for('auth.register') }}" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>First name<input name="first_name" value="{{ form_data.get('first_name', '') if form_data else '' }}" minlength="2" maxlength="100" required></label>
-    <label>Last name<input name="last_name" value="{{ form_data.get('last_name', '') if form_data else '' }}" minlength="2" maxlength="100" required></label>
-    <label>Work email<input id="email" name="email" type="email" value="{{ form_data.get('email', '') if form_data else '' }}" maxlength="150" autocomplete="email" required></label>
-    <label>Staff ID<input name="staff_id" value="{{ form_data.get('staff_id', '') if form_data else '' }}" minlength="3" maxlength="50" pattern="[A-Za-z0-9-]+" required></label>
-    <label>Birthday<input id="birth_date" name="birth_date" type="date" value="{{ form_data.get('birth_date', '') if form_data else '' }}" required></label>
-    <label>Requested role<select name="requested_role" required><option value="staff">Staff</option><option value="researcher">Researcher</option><option value="supervisor">Supervisor</option></select></label>
-    <label>Password<input id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
-    <button class="password-toggle" type="button" data-password-toggle="password">Show password</button>
-    <label>Confirm password<input id="confirm_password" name="confirm_password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></label>
+    <label>First name
+      <input name="first_name" value="{{ form_data.get('first_name', '') if form_data else '' }}" 
+      minlength="2" maxlength="100" required>
+    </label>
+    <label>Last name
+      <input name="last_name" value="{{ form_data.get('last_name', '') if form_data else '' }}" 
+      minlength="2" maxlength="100" required>
+    </label>
+    <label>Work email
+      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') if form_data else '' }}"
+       maxlength="150" autocomplete="email" required>
+      </label>
+    <label>Staff ID
+      <input name="staff_id" value="{{ form_data.get('staff_id', '') if form_data else '' }}"
+       minlength="3" maxlength="50" pattern="[A-Za-z0-9-]+" required>
+      </label>
+    <label>Birthday
+      <input id="birth_date" name="birth_date" type="date" 
+      value="{{ form_data.get('birth_date', '') if form_data else '' }}" required>
+    </label>
+    <label>Requested role
+      <select name="requested_role" required>
+        <option value="staff">Staff</option>
+        <option value="researcher">Researcher</option>
+        <option value="supervisor">Supervisor</option>
+      </select>
+    </label>
+    <label>Password
+      <input id="password" name="password" type="password" 
+      minlength="8" maxlength="128" autocomplete="new-password" required>
+    </label>
+    <button class="password-toggle" type="button" data-password-toggle="password">Show password
+      <span class="password-toggle-icon" aria-hidden="true"></span>
+    </button>
+    <label>Confirm password
+      <input id="confirm_password" name="confirm_password" type="password"
+       minlength="8" maxlength="128" autocomplete="new-password" required></label>
     <p class="field-message" data-password-message aria-live="polite"></p>
     <button type="submit">Request access</button>
   </form>
   <p>Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
 </section>
 {% endblock %}
+
 {% block scripts %}
 <script
   src="{{ url_for('static', filename='js/auth/registration.js') }}"

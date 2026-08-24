@@ -8,9 +8,7 @@
     content="width=device-width, initial-scale=1"
   >
 
-  <title>
-    {% block title %}LabSmartTrack{% endblock %}
-  </title>
+  <title>{% block title %}LabSmartTrack{% endblock %}</title>
 
   <link
     rel="stylesheet"
@@ -19,35 +17,6 @@
 
   {% block head %}{% endblock %}
 </head>
-<main class="page-shell">
-  <header class="topbar">
-    <!-- Page title and authentication navigation -->
-  </header>
-
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="flash-messages" aria-live="polite">
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">
-            <span>{{ message }}</span>
-
-            <button
-              type="button"
-              class="flash-close"
-              aria-label="Dismiss message"
-            >
-              &times;
-            </button>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
-
-  <section class="content">
-    {% block content %}{% endblock %}
-  </section>
-</main>
 
 <body>
   <div
@@ -83,9 +52,7 @@
           <a href="/reports">Reports</a>
 
           {% if current_user.role == "admin" %}
-            <a href="{{ url_for('admin.registrations') }}">
-              Admin
-            </a>
+            <a href="/admin/registrations">Admin</a>
           {% endif %}
         </nav>
       </aside>
@@ -99,7 +66,7 @@
           </p>
 
           <h1>
-            {% block page_title %}Dashboard{% endblock %}
+            {% block page_title %}LabSmartTrack{% endblock %}
           </h1>
         </div>
 
@@ -126,10 +93,7 @@
               </button>
             </form>
           {% else %}
-            <a
-              class="auth-link"
-              href="{{ url_for('auth.login') }}"
-            >
+            <a href="{{ url_for('auth.login') }}">
               Login
             </a>
 
@@ -145,13 +109,21 @@
 
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <section class="flash-messages" aria-live="polite">
+          <div class="flash-messages" aria-live="polite">
             {% for category, message in messages %}
               <div class="flash-message flash-{{ category }}">
-                {{ message }}
+                <span>{{ message }}</span>
+
+                <button
+                  type="button"
+                  class="flash-close"
+                  aria-label="Dismiss message"
+                >
+                  &times;
+                </button>
               </div>
             {% endfor %}
-          </section>
+          </div>
         {% endif %}
       {% endwith %}
 
