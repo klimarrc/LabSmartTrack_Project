@@ -3,12 +3,18 @@
 {% block title %}
 Login | LabSmartTrack
 {% endblock %}
+
+<h1>
 {% block eyebrow %}
 Welcome back
 {% endblock %}
+</h1>
+
+<h2>
 {% block page_title %}
 Log in to LabSmartTrack
 {% endblock %}
+</h2>
 
 {% block content %}
 <section class="auth-card">
@@ -17,11 +23,11 @@ Log in to LabSmartTrack
       <img
         class="brand-logo"
         src="{{ url_for('static', filename='images/lab_logo_v2.png') }}"
-        alt="LabSmartTrack"
+        alt="LabSmartTrack_logo"
       >
     </div>
 
-    <div>
+    <div class="auth-card-header-text">
       <h2>Log in</h2>
       <p>
         Enter your email address and password to access your account.
@@ -95,7 +101,7 @@ Log in to LabSmartTrack
 
   <div class="auth-card-footer">
     <span>Do not have an approved account?</span>
-    
+
     <a href="{{ url_for('auth.forgot_password') }}">
           Forgot password?
         </a>

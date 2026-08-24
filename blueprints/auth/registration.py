@@ -11,14 +11,14 @@ from blueprints.auth import auth_bp
 from api.services.email_service import send_email
 from api.models.user_model import User
 from database import db
-from extensions import limiter
+# from extensions import limiter
 
 
 ALLOWED_REQUESTED_ROLES = {"staff", "researcher", "supervisor"}
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
-@limiter.limit("3 per hour")
+# @limiter.limit("3 per hour")
 def register():
     """Create a pending account that requires administrator approval."""
 

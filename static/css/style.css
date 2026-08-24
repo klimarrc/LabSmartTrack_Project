@@ -137,13 +137,22 @@ body {
   padding: 30px 32px 18px;
 }
 
+.auth-brand-icon {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  background: var(--color-teal-light);
+  border: 1px solid #c7e9e3;
+  border-radius: 15px;
+}
+
 
 .brand-logo {
   width: 46px;
   height: 46px;
   object-fit: contain;
 }
-
 .auth-brand-icon {
   display: grid;
   width: 68px;
@@ -298,6 +307,68 @@ body {
 .password-toggle:focus-visible {
   outline: 3px solid rgb(43 140 255 / 30%);
   outline-offset: 2px;
+}
+
+/* Registration page */
+.registration-card {
+  width: min(100%, 720px);
+}
+
+.registration-card form {
+  gap: 26px;
+}
+
+.registration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.registration-grid .full-width {
+  grid-column: 1 / -1;
+}
+
+.form-group select {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px 40px 11px 13px;
+  color: var(--color-navy);
+  font: inherit;
+  background: #ffffff;
+  border: 1px solid #aebdca;
+  border-radius: 9px;
+}
+
+.form-group select:focus-visible {
+  border-color: var(--color-focus);
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(43 140 255 / 20%);
+}
+
+.field-help {
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.field-help.field-error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.field-help.field-success {
+  color: #067647;
+  font-weight: 700;
+}
+
+@media (max-width: 620px) {
+  .registration-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-grid .full-width {
+    grid-column: auto;
+  }
 }
 
 /* Footer */

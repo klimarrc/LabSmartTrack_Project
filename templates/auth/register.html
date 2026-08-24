@@ -1,60 +1,218 @@
 {% extends "base.html" %}
+
 {% block title %}
-Registration | LabSmartTrack
+Register for LabSmartTrack
 {% endblock %}
-{% block eyebrow %}
-Account access
-{% endblock %}
+
 {% block page_title %}
-Staff registration
+Register for LabSmartTrack
 {% endblock %}
 
 {% block content %}
-<section class="panel auth-panel">
-  <p>An administrator must approve your request before you can log in.</p>
-  <form id="registration-form" method="POST" action="{{ url_for('auth.register') }}" novalidate>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label>First name
-      <input name="first_name" value="{{ form_data.get('first_name', '') if form_data else '' }}" 
-      minlength="2" maxlength="100" required>
-    </label>
-    <label>Last name
-      <input name="last_name" value="{{ form_data.get('last_name', '') if form_data else '' }}" 
-      minlength="2" maxlength="100" required>
-    </label>
-    <label>Work email
-      <input id="email" name="email" type="email" value="{{ form_data.get('email', '') if form_data else '' }}"
-       maxlength="150" autocomplete="email" required>
-      </label>
-    <label>Staff ID
-      <input name="staff_id" value="{{ form_data.get('staff_id', '') if form_data else '' }}"
-       minlength="3" maxlength="50" pattern="[A-Za-z0-9-]+" required>
-      </label>
-    <label>Birthday
-      <input id="birth_date" name="birth_date" type="date" 
-      value="{{ form_data.get('birth_date', '') if form_data else '' }}" required>
-    </label>
-    <label>Requested role
-      <select name="requested_role" required>
-        <option value="staff">Staff</option>
-        <option value="researcher">Researcher</option>
-        <option value="supervisor">Supervisor</option>
-      </select>
-    </label>
-    <label>Password
-      <input id="password" name="password" type="password" 
-      minlength="8" maxlength="128" autocomplete="new-password" required>
-    </label>
-    <button class="password-toggle" type="button" data-password-toggle="password">Show password
-      <span class="password-toggle-icon" aria-hidden="true"></span>
+<section class="auth-card registration-card">
+  <div class="auth-card-header auth-card-header-simple">
+    <h2>Request a LabSmartTrack account</h2>
+
+    <p>
+      Complete this form using your institutional information.
+      An administrator must approve your request before you can log in.
+    </p>
+  </div>
+
+  <form
+    id="registration-form"
+    method="POST"
+    action="{{ url_for('auth.register') }}"
+    data-prevent-double-submit
+  >
+    <input
+      type="hidden"
+      name="csrf_token"
+      value="{{ csrf_token() }}"
+    >
+
+    <div class="registration-grid">
+      <div class="form-group">
+        <label for="first-name">First name</label>
+
+        <input
+          id="first-name"
+          name="first_name"
+          type="text"
+          maxlength="100"
+          autocomplete="given-name"
+          value="{{ request.form.get('first_name', '') }}"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="last-name">Last name</label>
+
+        <input
+          id="last-name"
+          name="last_name"
+          type="text"
+          maxlength="100"
+          autocomplete="family-name"
+          value="{{ request.form.get('last_name', '') }}"
+          required
+        >
+      </div>
+
+      <div class="form-group full-width">
+        <label for="registration-email">
+          Institutional email
+        </label>
+
+        <input
+          id="registration-email"
+          name="email"
+          type="email"
+          maxlength="150"
+          autocomplete="email"
+          placeholder="name@institution.com"
+          value="{{ request.form.get('email', '') }}"
+          required
+        >
+
+        <small class="field-help">
+          Use the email address associated with your laboratory.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="staff-id">Staff ID</label>
+
+        <input
+          id="staff-id"
+          name="staff_id"
+          type="text"
+          maxlength="50"
+          autocomplete="off"
+          placeholder="Example: STAFF-1024"
+          value="{{ request.form.get('staff_id', '') }}"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="birth-date">Birthday</label>
+
+        <input
+          id="birth-date"
+          name="birth_date"
+          type="date"
+          autocomplete="bday"
+          value="{{ request.form.get('birth_date', '') }}"
+          required
+        >
+      </div>
+
+      <div class="form-group full-width">
+        <label for="requested-role">Requested role</label>
+
+        <select
+          id="requested-role"
+          name="requested_role"
+          required
+        >
+          {% for role in roles %}
+            <option
+              value="{{ role }}"
+              {% if request.form.get('requested_role') == role %}
+                selected
+              {% endif %}
+            >
+              {{ role | replace('_', ' ') | title }}
+            </option>
+          {% endfor %}
+        </select>
+
+        <small class="field-help">
+          The administrator will confirm your final access level.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="registration-password">Password</label>
+
+        <div class="password-field">
+          <input
+            id="registration-password"
+            name="password"
+            type="password"
+            minlength="8"
+            maxlength="128"
+            autocomplete="new-password"
+            required
+          >
+
+          <button
+            type="button"
+            class="password-toggle"
+            data-password-toggle="registration-password"
+            aria-controls="registration-password"
+            aria-pressed="false"
+          >
+            Show
+          </button>
+        </div>
+
+        <small class="field-help">
+          Use at least 8 characters.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Confirm password</label>
+
+        <div class="password-field">
+          <input
+            id="confirm-password"
+            name="confirm_password"
+            type="password"
+            minlength="8"
+            maxlength="128"
+            autocomplete="new-password"
+            required
+          >
+
+          <button
+            type="button"
+            class="password-toggle"
+            data-password-toggle="confirm-password"
+            aria-controls="confirm-password"
+            aria-pressed="false"
+          >
+            Show
+          </button>
+        </div>
+
+        <small
+          id="password-match-message"
+          class="field-help"
+          aria-live="polite"
+        ></small>
+      </div>
+    </div>
+
+    <button
+      type="submit"
+      class="auth-submit"
+      data-submitting-text="Submitting request..."
+    >
+      Request access
     </button>
-    <label>Confirm password
-      <input id="confirm_password" name="confirm_password" type="password"
-       minlength="8" maxlength="128" autocomplete="new-password" required></label>
-    <p class="field-message" data-password-message aria-live="polite"></p>
-    <button type="submit">Request access</button>
   </form>
-  <p>Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+
+  <footer class="auth-card-footer">
+    <span>Already registered?</span>
+
+    <a href="{{ url_for('auth.login') }}">
+      Log in
+    </a>
+  </footer>
 </section>
 {% endblock %}
 
