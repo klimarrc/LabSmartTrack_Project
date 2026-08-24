@@ -6,10 +6,10 @@ from datetime import date
 from flask import current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from blueprints.auth import auth_bp
 
 from api.services.email_service import send_email
 from api.models.user_model import User
-from blueprints.auth import auth_bp
 from database import db
 from extensions import limiter
 
@@ -33,7 +33,8 @@ def register():
     last_name = request.form.get("last_name", "").strip()
     staff_id = request.form.get("staff_id", "").strip()
     birth_date_text = request.form.get("birth_date", "")
-    requested_role = request.form.get("requested_role", "staff").strip().lower()
+    requested_role = request.form.get(
+        "requested_role", "staff").strip().lower()
     password = request.form.get("password", "")
     confirmation = request.form.get("confirm_password", "")
 
@@ -80,13 +81,13 @@ def register():
         send_email(
             current_app.config["ADMIN_EMAIL"],
             "New LabSmartTrack registration",
-    
-                f"{user.full_name} requested LabSmartTrack access.\n\n"
-                f"Staff ID: {user.staff_id}\n"
-                f"Requested role: {user.requested_role}\n\n"
-                f"Review: {review_url}\n"
-            ),
-        
+
+            f"{user.full_name} requested LabSmartTrack access.\n\n"
+            f"Staff ID: {user.staff_id}\n"
+            f"Requested role: {user.requested_role}\n\n"
+            f"Review: {review_url}\n"
+        ),
+
     except (smtplib.SMTPException, OSError, KeyError):
         current_app.logger.exception("Admin registration email failed.")
 

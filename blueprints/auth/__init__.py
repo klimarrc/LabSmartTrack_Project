@@ -1,12 +1,17 @@
 """Authentication blueprint package."""
+
 from flask import Blueprint
 
-## Import the login, password_reset, and registration blueprints
-from blueprints.auth import login, password_reset, registration
-from blueprints.auth import auth_bp
 
-auth_bp = Blueprint("auth", __name__)
+# Create this first.
+auth_bp = Blueprint(
+    "auth",
+    __name__,
+    url_prefix="/auth",
+)
 
-auth_bp.register_blueprint(login)
-auth_bp.register_blueprint(password_reset)
-auth_bp.register_blueprint(registration)
+
+# Import routes only after auth_bp exists.
+from . import login  # noqa: E402, F401
+from . import password_reset  # noqa: E402, F401
+from . import registration  # noqa: E402, F401

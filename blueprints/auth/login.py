@@ -1,17 +1,23 @@
 """Login and logout routes."""
 
-from flask import flash, redirect, render_template, request, session, url_for
+import logging
+
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
+from sqlalchemy.exc import SQLAlchemyError
 
 from api.models.user_model import User
-from blueprints.auth import auth_bp
 from extensions import limiter
+from blueprints.auth import auth_bp
+from database import db
+
+logger = logging.getLogger(__name__)
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("5 per minute")
+@limiter.limit("10 per hour")
 def login():
-    """Authenticate an approved, enabled user."""
+    """Authenticate an approved and enabled user."""
 
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.dashboard"))
@@ -21,35 +27,62 @@ def login():
 
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
-    user = User.query.filter_by(email=email).first()
 
-    # Use the same response for unknown accounts and incorrect passwords.
+    try:
+        user = User.query.filter_by(email=email).first()
+        error = get_login_error(user, password)
+
+        if error:
+            message, category = error
+            flash(message, category)
+            return render_template("auth/login.html")
+
+        login_user(user)
+        return redirect(url_for("dashboard.dashboard"))
+
+    except SQLAlchemyError:
+        db.session.rollback()
+
+        # Record technical details in the server log,
+        # but do not expose them to the browser.
+        logger.exception("Database error during login")
+
+        flash(
+            "Login is temporarily unavailable. Please try again.",
+            "error",
+        )
+
+        return render_template("auth/login.html"), 500
+
+
+def get_login_error(user, password):
+    """Return an error message or None when login is permitted."""
+
     if user is None or not user.check_password(password):
-        flash("Incorrect email or password.", "error")
-        return render_template("auth/login.html"), 401
+        return "Incorrect email or password.", "error"
 
     if user.approval_status == "pending":
-        flash("Your account is waiting for administrator approval.", "warning")
-        return render_template("auth/login.html"), 403
+        return (
+            "Your registration is waiting for administrator approval.",
+            "warning",
+        )
 
-    if user.approval_status != "approved" or not user.enabled:
-        flash("This account cannot access LabSmartTrack.", "error")
-        return render_template("auth/login.html"), 403
+    if user.approval_status == "rejected":
+        return "Your registration was not approved.", "error"
 
-    session.clear()
-    if not login_user(user):
-        flash("This account cannot access LabSmartTrack.", "error")
-        return render_template("auth/login.html"), 403
+    if user.approval_status != "approved":
+        return "Your account cannot log in.", "error"
 
-    session.permanent = True
-    return redirect(url_for("dashboard.dashboard"))
+    if not user.enabled:
+        return "This account is disabled.", "error"
+
+    return None
 
 
-@auth_bp.post("/logout")
+@auth_bp.route("/logout", methods=["POST"])
 def logout():
-    """End the authenticated session."""
+    """End the authenticated user's session."""
 
     logout_user()
-    session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for("auth.login"))

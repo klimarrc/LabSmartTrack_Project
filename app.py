@@ -1,31 +1,22 @@
 """LabSmartTrack Flask application."""
-
 import os
-
 from datetime import timedelta
 
 from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager
 
-from database import db
-from extensions import csrf, limiter
-# import every model before database table creation
 from api.models.user_model import User
-# Import the module so all location models are registered 
-# before table creation.
-import api.models.location_model as _location_models
-# Import the module so all breeding models are registered 
-# before table creation.
-import api.models.breeding_model as _breeding_models
-# Import the module so all experiment models are registered 
-# before table creation.
-import api.models.experiment_model as _experiment_models
-
-# Import blueprints.
+from blueprints.admin import admin_bp
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
-from blueprints.admin import admin_bp
+from database import db
+from extensions import csrf, limiter
+
+import api.models.breeding_model as _breeding_models
+import api.models.experiment_model as _experiment_models
+import api.models.location_model as _location_models
+import api.models.mouse_model as _mouse_models
 
 load_dotenv()
 
@@ -149,9 +140,9 @@ def create_app(test_config=None):
 
     login_manager.login_view = "auth.login"
     login_manager.login_message = (
-        "Please log in to continue."
+        "Please log in to access LabSmartTrack."
     )
-    login_manager.login_message_category = "warning"
+    login_manager.login_message_category = None
 
     # Register each blueprint once.
     app.register_blueprint(auth_bp)
@@ -206,9 +197,6 @@ def add_security_headers(app):
         )
 
         return response
-
-
-
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from flask import current_app, flash, redirect, render_template, request, url_fo
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy.exc import SQLAlchemyError
 
+#  importing the User model and email service from the api package
 from api.models.user_model import User
 from api.services.email_service import send_email
 from blueprints.auth import auth_bp

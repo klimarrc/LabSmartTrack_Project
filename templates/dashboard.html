@@ -1,49 +1,42 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}LabSmartTrack{% endblock %}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-  {% block head %}{% endblock %}
-</head>
-<body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <a class="brand" href="/">
-        <img class="brand-logo" src="{{ url_for('static', filename='images/lab_logo.png') }}" alt="LabSmartTrack logo">
-        <span>
-          <strong>LabSmartTrack</strong>
-          <small>Mouse Colony Management System</small>
-        </span>
-      </a>
+{% extends "base.html" %}
 
-      <nav class="nav-list">
-        <a href="/">Dashboard</a>
-        <a href="/rooms">Rooms</a>
-        <a href="/cages">Cages</a>
-        <a href="/mice">Mice</a>
-        <a href="/breeding">Breeding</a>
-        <a href="/reports">Reports</a>
-        <a href="/admin/users">Admin</a>
-      </nav>
-    </aside>
+{% block title %}
+Dashboard | LabSmartTrack
+{% endblock %}
 
-    <main class="page-shell">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">{% block eyebrow %}LabSmartTrack{% endblock %}</p>
-          <h1>{% block page_title %}Dashboard{% endblock %}</h1>
-        </div>
-        <a class="button" href="/logout">Logout</a>
-      </header>
+{% block eyebrow %}
+Overview
+{% endblock %}
 
-      <section class="content">
-        {% block content %}{% endblock %}
-      </section>
-    </main>
-  </div>
-  {% block scripts %}{% endblock %}
-</body>
-</html>
+{% block page_title %}
+Dashboard
+{% endblock %}
+
+{% block content %}
+<section class="grid">
+  <article class="stat-card">
+    <span>Rooms</span>
+    <strong>{{ room_count | default(0) }}</strong>
+  </article>
+
+  <article class="stat-card">
+    <span>Cages</span>
+    <strong>{{ cage_count | default(0) }}</strong>
+  </article>
+
+  <article class="stat-card">
+    <span>Mice</span>
+    <strong>{{ mouse_count | default(0) }}</strong>
+  </article>
+
+  <article class="stat-card">
+    <span>Weaning Due</span>
+    <strong>{{ weaning_due | default(0) }}</strong>
+  </article>
+</section>
+
+<section class="panel">
+  <h2>Welcome to LabSmartTrack</h2>
+  <p>Manage rooms, cages, mice, breeding pairs and litters.</p>
+</section>
+{% endblock %}

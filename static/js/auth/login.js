@@ -1,20 +1,47 @@
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector("#login-form");
-  if (!form) return;
-  const password = form.querySelector("#login-password");
-  const toggle = form.querySelector("[data-password-toggle]");
+  const toggleButtons = document.querySelectorAll(
+    "[data-password-toggle]"
+  );
 
-  toggle?.addEventListener("click", () => {
-    const showing = password.type === "text";
-    password.type = showing ? "password" : "text";
-    toggle.textContent = showing ? "Show password" : "Hide password";
+  toggleButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const inputId = button.dataset.passwordToggle;
+      const passwordInput = document.getElementById(inputId);
+
+      if (!passwordInput) {
+        return;
+      }
+
+      const showingPassword =
+        passwordInput.type === "text";
+
+      passwordInput.type = showingPassword
+        ? "password"
+        : "text";
+
+      button.textContent = showingPassword
+        ? "Show password"
+        : "Hide password";
+
+      button.setAttribute(
+        "aria-pressed",
+        String(!showingPassword)
+      );
+    });
   });
 
-  form.addEventListener("submit", () => {
-    const button = form.querySelector("button[type='submit']");
-    button.disabled = true;
-    button.textContent = "Logging in...";
+  const loginForm = document.getElementById("login-form");
+
+  loginForm?.addEventListener("submit", () => {
+    const submitButton = loginForm.querySelector(
+      'button[type="submit"]'
+    );
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Logging in...";
+    }
   });
 });
