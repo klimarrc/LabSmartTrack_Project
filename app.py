@@ -10,6 +10,31 @@ from flask_login import LoginManager
 
 from database import db
 from extensions import csrf, limiter
+# import every model before database table creation
+from api.models.user_model import User
+from api.models.user_model import User
+from api.models.location_model import (
+    Facility,
+    Room,
+    Rack,
+    Cage,
+)
+from api.models.mouse_model import Mouse
+from api.models.breeding_model import (
+    Strain,
+    BreedingPair,
+    Litter,
+)
+from api.models.experiment_model import (
+    Protocol,
+    Experiment,
+)
+
+# Import blueprints.
+from blueprints.auth import auth_bp
+from blueprints.dashboard import dashboard_bp
+from blueprints.admin import admin_bp
+
 
 
 
@@ -21,9 +46,6 @@ login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(user_id):
     """Load the authenticated user from the database."""
-
-    from api.models.user_model import User
-
     try:
         parsed_user_id = int(user_id)
     except (TypeError, ValueError):
@@ -138,31 +160,6 @@ def create_app(test_config=None):
         "Please log in to continue."
     )
     login_manager.login_message_category = "warning"
-
-    # Import every model before database table creation.
-    # This allows SQLAlchemy to resolve all relationships.
-    from api.models.user_model import User
-    from api.models.location_model import (
-        Facility,
-        Room,
-        Rack,
-        Cage,
-    )
-    from api.models.mouse_model import Mouse
-    from api.models.breeding_model import (
-        Strain,
-        BreedingPair,
-        Litter,
-    )
-    from api.models.experiment_model import (
-        Protocol,
-        Experiment,
-    )
-
-    # Import blueprints.
-    from blueprints.auth import auth_bp
-    from blueprints.dashboard import dashboard_bp
-    from blueprints.admin import admin_bp
 
     # Register each blueprint once.
     app.register_blueprint(auth_bp)
