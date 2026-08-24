@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+Pending Registrations | LabSmartTrack
+{% endblock %}
+
+{% block eyebrow %}Administration{% endblock %}
+{% block page_title %}Staff Registrations{% endblock %}
+
+{% block content %}
+<section class="panel">
+    <div class="section-header">
+        <div>
+            <h2>Waiting for approval</h2>
+
+            <p>
+                Review each registration before giving access
+                to LabSmartTrack.
+            </p>
+        </div>
+
+        <span class="pending-count">
+            {{ pending_users | length }} pending
+        </span>
+    </div>
+
+    {% if pending_users %}
+        <div class="table-container">
+            <table id="pending-registrations">
+                <thead>
+                    <tr>
+                        <th>Staff member</th>
+                        <th>Email</th>
+                        <th>Staff ID</th>
+                        <th>Requested role</th>
+                        <th>Registered</th>
+                        <th>Decision</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for user in pending_users %}
+                        <tr>
+                            <td>{{ user.full_name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.staff_id }}</td>
+                            <td>
+                                {{ user.requested_role | capitalize }}
+                            </td>
+                            <td>
+                                {{ user.registered_at.strftime(
+                                    "%Y-%m-%d"
+                                ) }}
+                            </td>
+
+                            <td class="registration-actions">
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'admin.approve_registration',
+                                        user_id=user.user_id
+                                    ) }}"
+                                    data-registration-action="approve"
+                                    data-staff-name="{{ user.full_name }}"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        class="approve-button"
+                                        type="submit"
+                                    >
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'admin.reject_registration',
+                                        user_id=user.user_id
+                                    ) }}"
+                                    data-registration-action="reject"
+                                    data-staff-name="{{ user.full_name }}"
+                                >
+                                    <input
+                                        type="hidden"
+                                        name="csrf_token"
+                                        value="{{ csrf_token() }}"
+                                    >
+
+                                    <button
+                                        class="reject-button"
+                                        type="submit"
+                                    >
+                                        Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <h3>No pending registrations</h3>
+            <p>All staff registration requests have been reviewed.</p>
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script
+    src="{{ url_for('static', filename='js/admin.js') }}"
+    defer
+></script>
+{% endblock %}

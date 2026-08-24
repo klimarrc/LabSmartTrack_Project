@@ -2,17 +2,17 @@
 
 import os
 
+from datetime import timedelta
+
+from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager
 
 from database import db
-
-# Import every model so SQLAlchemy can register all relationships.
-from api.models.user_model import User
+from extensions import csrf, limiter
 
 
-from blueprints.auth import auth_bp
-from blueprints.dashboard import dashboard_bp
+load_dotenv()
 
 
 login_manager = LoginManager()
@@ -20,52 +20,211 @@ login_manager = LoginManager()
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Load a user by their unique identifier."""
+    """Load the authenticated user from the database."""
 
-    return db.session.get(User, int(user_id))
+    from api.models.user_model import User
+
+    try:
+        parsed_user_id = int(user_id)
+    except (TypeError, ValueError):
+        return None
+
+    return db.session.get(User, parsed_user_id)
 
 
-def create_app():
-    """Create and configure the Flask application."""
+def create_app(test_config=None):
+    """Create and configure the LabSmartTrack application."""
 
-    app = Flask(__name__)
-
-    app.config["SECRET_KEY"] = os.getenv(
-        "SECRET_KEY",
-        "labsmarttrack-dev-secret",
+    basedir = os.path.abspath(
+        os.path.dirname(__file__)
     )
 
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    instance_directory = os.path.join(basedir, "instance")
-    os.makedirs(instance_directory, exist_ok=True)
+    template_directory = os.path.join(
+        basedir,
+        "templates",
+    )
+
+    static_directory = os.path.join(
+        basedir,
+        "static",
+    )
+
+    instance_directory = os.path.join(
+        basedir,
+        "instance",
+    )
+
+    os.makedirs(
+        instance_directory,
+        exist_ok=True,
+    )
 
     database_path = os.path.join(
         instance_directory,
         "labsmarttrack.db",
     )
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"sqlite:///{database_path}"
+    app = Flask(
+        __name__,
+        template_folder=template_directory,
+        static_folder=static_directory,
     )
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    production = (
+        os.getenv("FLASK_ENV", "development").lower()
+        == "production"
+    )
+
+    app.config.from_mapping(
+        SECRET_KEY=os.getenv("SECRET_KEY"),
+        SQLALCHEMY_DATABASE_URI=(
+            f"sqlite:///{database_path}"
+        ),
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+
+        APP_BASE_URL=os.getenv(
+            "APP_BASE_URL",
+            "http://127.0.0.1:5000",
+        ),
+
+        ADMIN_EMAIL=os.getenv("ADMIN_EMAIL"),
+
+        MAIL_HOST=os.getenv("MAIL_HOST"),
+        MAIL_PORT=int(
+            os.getenv("MAIL_PORT", "465")
+        ),
+        MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
+        MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
+        MAIL_FROM=os.getenv("MAIL_FROM"),
+
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=production,
+
+        REMEMBER_COOKIE_HTTPONLY=True,
+        REMEMBER_COOKIE_SAMESITE="Lax",
+        REMEMBER_COOKIE_SECURE=production,
+
+        PERMANENT_SESSION_LIFETIME=timedelta(
+            minutes=30
+        ),
+
+        MAX_CONTENT_LENGTH=2 * 1024 * 1024,
+        MAX_FORM_MEMORY_SIZE=100 * 1024,
+        MAX_FORM_PARTS=100,
+    )
+
+    # Pytest can replace the database and security settings.
+    secret_key = app.config.get("SECRET_KEY")
+
+    if not secret_key:
+        raise RuntimeError(
+            "The SECRET_KEY environment variable is required."
+        )
+
+    if not app.config["TESTING"] and len(secret_key) < 32:
+        raise RuntimeError(
+            "SECRET_KEY must contain at least 32 characters."
+        )
+
+    # Connect Flask extensions.
     db.init_app(app)
-
+    csrf.init_app(app)
+    limiter.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login"
-    login_manager.login_message = "Please log in to continue."
 
+    login_manager.login_view = "auth.login"
+    login_manager.login_message = (
+        "Please log in to continue."
+    )
+    login_manager.login_message_category = "warning"
+
+    # Import every model before database table creation.
+    # This allows SQLAlchemy to resolve all relationships.
+    from api.models.user_model import User
+    from api.models.location_model import (
+        Facility,
+        Room,
+        Rack,
+        Cage,
+    )
+    from api.models.mouse_model import Mouse
+    from api.models.breeding_model import (
+        Strain,
+        BreedingPair,
+        Litter,
+    )
+    from api.models.experiment_model import (
+        Protocol,
+        Experiment,
+    )
+
+    # Import blueprints.
+    from blueprints.auth import auth_bp
+    from blueprints.dashboard import dashboard_bp
+    from blueprints.admin import admin_bp
+
+    # Register each blueprint once.
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(admin_bp)
 
     with app.app_context():
         db.create_all()
 
+    add_security_headers(app)
+
     return app
 
 
-app = create_app()
+def add_security_headers(app):
+    """Add browser security headers to every response."""
+
+    @app.after_request
+    def apply_headers(response):
+        response.headers[
+            "Content-Security-Policy"
+        ] = (
+            "default-src 'self'; "
+            "script-src 'self'; "
+            "style-src 'self'; "
+            "img-src 'self' data:; "
+            "font-src 'self'; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "form-action 'self'; "
+            "base-uri 'self'"
+        )
+
+        response.headers[
+            "X-Content-Type-Options"
+        ] = "nosniff"
+
+        response.headers[
+            "X-Frame-Options"
+        ] = "DENY"
+
+        response.headers[
+            "Referrer-Policy"
+        ] = "strict-origin-when-cross-origin"
+
+        response.headers[
+            "Permissions-Policy"
+        ] = (
+            "camera=(), "
+            "microphone=(), "
+            "geolocation=()"
+        )
+
+        return response
+
+
+
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app = create_app()
+
+    app.run(
+        debug=os.getenv("FLASK_DEBUG") == "1"
+    )

@@ -1,0 +1,21 @@
+<form
+    class="admin-toolbar"
+    method="GET"
+    action="{{ url_for('admin.registrations') }}"
+>
+    <label for="registration-search">
+        Search registrations
+    </label>
+
+    <input
+        id="registration-search"
+        name="q"
+        type="search"
+        placeholder="Search name, email, staff ID or role"
+        value="{{ request.args.get('q', '') }}"
+        maxlength="100"
+        autocomplete="off"
+    />
+
+    <button type="submit">Search</button>
+</form>
