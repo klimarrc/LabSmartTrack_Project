@@ -12,31 +12,20 @@ from database import db
 from extensions import csrf, limiter
 # import every model before database table creation
 from api.models.user_model import User
-from api.models.user_model import User
-from api.models.location_model import (
-    Facility,
-    Room,
-    Rack,
-    Cage,
-)
-from api.models.mouse_model import Mouse
-from api.models.breeding_model import (
-    Strain,
-    BreedingPair,
-    Litter,
-)
-from api.models.experiment_model import (
-    Protocol,
-    Experiment,
-)
+# Import the module so all location models are registered 
+# before table creation.
+import api.models.location_model as _location_models
+# Import the module so all breeding models are registered 
+# before table creation.
+import api.models.breeding_model as _breeding_models
+# Import the module so all experiment models are registered 
+# before table creation.
+import api.models.experiment_model as _experiment_models
 
 # Import blueprints.
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
 from blueprints.admin import admin_bp
-
-
-
 
 load_dotenv()
 
@@ -136,6 +125,9 @@ def create_app(test_config=None):
         MAX_FORM_PARTS=100,
     )
 
+    if test_config is not None:
+        app.config.from_mapping(test_config)
+
     # Pytest can replace the database and security settings.
     secret_key = app.config.get("SECRET_KEY")
 
@@ -220,8 +212,8 @@ def add_security_headers(app):
 
 
 if __name__ == "__main__":
-    app = create_app()
+    application = create_app()
 
-    app.run(
+    application.run(
         debug=os.getenv("FLASK_DEBUG") == "1"
     )
