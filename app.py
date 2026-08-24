@@ -12,8 +12,8 @@ from database import db
 from extensions import csrf, limiter
 
 
-load_dotenv()
 
+load_dotenv()
 
 login_manager = LoginManager()
 
