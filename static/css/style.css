@@ -144,6 +144,16 @@ body {
   object-fit: contain;
 }
 
+.auth-brand-icon {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  background: var(--color-teal-light);
+  border: 1px solid #c7e9e3;
+  border-radius: 15px;
+}
+
 .auth-brand-icon img {
   display: block;
   width: 64px;
