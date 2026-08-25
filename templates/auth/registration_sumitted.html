@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}
+Registration Completed | LabSmartTrack
+{% endblock %}
+
+{% block eyebrow %}
+Request received
+{% endblock %}
+
+{% block page_title %}
+Registration completed
+{% endblock %}
+
+{% block content %}
+<section class="auth-card confirmation-card">
+  <div class="confirmation-icon" aria-hidden="true">
+    ✓
+  </div>
+
+  <h2>Your registration was completed</h2>
+
+  <p>
+        Your account request has been sent successfully.
+  </p>
+
+  <div class="approval-notice">
+    <strong>Wait for administrator approval</strong>
+
+    <span>
+      You cannot log in until an administrator reviews and
+      approves your account.
+    </span>
+  </div>
+
+  <p class="confirmation-help">
+    You will receive an email after your request has been
+    approved or rejected.
+  </p>
+
+  <a
+    class="auth-submit confirmation-button"
+    href="{{ url_for('auth.login') }}"
+  >
+    Return to login
+  </a>
+</section>
+{% endblock %}

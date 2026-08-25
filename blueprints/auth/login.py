@@ -70,7 +70,7 @@ def get_login_error(user, password):
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("10 per minute", methods=["POST"])
+@limiter.limit("50 per minute", methods=["POST"])
 def login():
     """Authenticate an approved and enabled user."""
 

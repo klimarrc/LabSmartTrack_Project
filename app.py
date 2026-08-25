@@ -6,13 +6,15 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_login import LoginManager
 
-from api.models.user_model import User
+
 from blueprints.admin import admin_bp
 from blueprints.auth import auth_bp
 from blueprints.dashboard import dashboard_bp
 from database import db
 from extensions import csrf, limiter
+from api.models.user_model import User
 
+# Import models to ensure they are registered with SQLAlchemy
 import api.models.breeding_model as _breeding_models
 import api.models.experiment_model as _experiment_models
 import api.models.location_model as _location_models
@@ -83,11 +85,11 @@ def create_app(test_config=None):
             f"sqlite:///{database_path}"
         ),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-
-        APP_BASE_URL=os.getenv(
-            "APP_BASE_URL",
-            "http://127.0.0.1:5000",
+        RATELIMIT_ENABLED=(
+            os.getenv("RATELIMIT_ENABLED", "true").lower()
+            == "true"
         ),
+        APP_BASE_URL=os.getenv("APP_BASE_URL"),
 
         ADMIN_EMAIL=os.getenv("ADMIN_EMAIL"),
 

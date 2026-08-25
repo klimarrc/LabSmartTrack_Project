@@ -38,7 +38,7 @@ def _read_token(token):
 
 
 @auth_bp.route("/forgot-password", methods=["GET", "POST"])
-@limiter.limit("3 per hour")
+@limiter.limit("50 per minutes", methods=["POST"])
 def forgot_password():
     """Email a time-limited reset link without revealing account existence."""
 
@@ -73,7 +73,7 @@ def forgot_password():
 
 
 @auth_bp.route("/reset-password/<token>", methods=["GET", "POST"])
-@limiter.limit("5 per hour")
+@limiter.limit("50 per minutes", methods=["POST"])
 def reset_password(token):
     """Validate a one-hour token and replace the user's password."""
 

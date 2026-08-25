@@ -9,8 +9,8 @@ Register for LabSmartTrack
 {% endblock %}
 
 {% block content %}
-<section class="auth-card registration-card">
-  <div class="auth-card-header auth-card-header-simple">
+<section class="auth-card">
+  <div class="recovery-header">
     <h2>Request a LabSmartTrack account</h2>
 
     <p>
@@ -45,7 +45,7 @@ Register for LabSmartTrack
           required
         >
       </div>
-
+      
       <div class="form-group">
         <label for="last-name">Last name</label>
 
@@ -59,6 +59,16 @@ Register for LabSmartTrack
           required
         >
       </div>
+      <div class="form-group">
+        <label for="staff-id">Staff ID</label>
+        <input
+          id="staff-id"
+          name="staff_id"
+          type="text"
+          maxlength="50"
+          value="{{ request.form.get('staff_id', '') }}"
+          required
+        >
 
       <div class="form-group full-width">
         <label for="registration-email">
@@ -80,22 +90,7 @@ Register for LabSmartTrack
           Use the email address associated with your laboratory.
         </small>
       </div>
-
-      <div class="form-group">
-        <label for="staff-id">Staff ID</label>
-
-        <input
-          id="staff-id"
-          name="staff_id"
-          type="text"
-          maxlength="50"
-          autocomplete="off"
-          placeholder="Example: STAFF-1024"
-          value="{{ request.form.get('staff_id', '') }}"
-          required
-        >
-      </div>
-
+        
       <div class="form-group">
         <label for="birth-date">Birthday</label>
 
@@ -117,6 +112,9 @@ Register for LabSmartTrack
           name="requested_role"
           required
         >
+            <option value="" disabled selected>
+            Select a role
+            </option>
           {% for role in roles %}
             <option
               value="{{ role }}"
@@ -124,7 +122,7 @@ Register for LabSmartTrack
                 selected
               {% endif %}
             >
-              {{ role | replace('_', ' ') | title }}
+              {{ role | title }}
             </option>
           {% endfor %}
         </select>
@@ -155,7 +153,7 @@ Register for LabSmartTrack
             aria-controls="registration-password"
             aria-pressed="false"
           >
-            Show
+          show
           </button>
         </div>
 
@@ -165,47 +163,35 @@ Register for LabSmartTrack
       </div>
 
       <div class="form-group">
-        <label for="confirm-password">Confirm password</label>
+        <label for="confirm-password">
+          Confirm password
+        </label>
 
-        <div class="password-field">
-          <input
-            id="confirm-password"
-            name="confirm_password"
-            type="password"
-            minlength="8"
-            maxlength="128"
-            autocomplete="new-password"
-            required
-          >
-
-          <button
-            type="button"
-            class="password-toggle"
-            data-password-toggle="confirm-password"
-            aria-controls="confirm-password"
-            aria-pressed="false"
-          >
-            Show
-          </button>
-        </div>
-
-        <small
-          id="password-match-message"
-          class="field-help"
-          aria-live="polite"
-        ></small>
+        <input
+          id="confirm-password"
+          name="confirm_password"
+          type="password"
+          minlength="8"
+          maxlength="128"
+          autocomplete="new-password"
+          required
+        >
       </div>
-    </div>
+      <small
+        id="password-match-message"
+        class="field-help"
+        aria-live="polite">
+      </small>
 
-    <button
-      type="submit"
-      class="auth-submit"
-      data-submitting-text="Submitting request..."
-    >
-      Request access
-    </button>
+      <button
+        type="submit"
+        class="auth-submit"
+        data-submitting-text="Submitting request..."
+      >
+        Submit request
+      </button>
+
   </form>
-
   <footer class="auth-card-footer">
     <span>Already registered?</span>
 
@@ -213,6 +199,7 @@ Register for LabSmartTrack
       Log in
     </a>
   </footer>
+
 </section>
 {% endblock %}
 
